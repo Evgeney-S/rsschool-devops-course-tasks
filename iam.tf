@@ -16,6 +16,11 @@ resource "aws_iam_role" "github_actions" {
       }
     }]
   })
+
+  tags = {
+    Name              = var.github_actions_role_name
+    common-course-tag = var.common_course_tag
+  }
 }
 
 resource "aws_iam_role_policy_attachment" "ec2" {
