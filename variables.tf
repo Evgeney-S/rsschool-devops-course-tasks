@@ -58,7 +58,7 @@ variable "azs" {
 }
 
 variable "ec2_ami" {
-  description = "AMI for bastion host"
+  description = "AMI for EC2 instanses, NAT and bastion host"
   default     = "ami-042b4708b1d05f512"
 }
 
