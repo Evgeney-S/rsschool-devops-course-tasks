@@ -75,14 +75,31 @@ resource "aws_security_group" "bastion" {
 
 resource "aws_security_group" "nat" {
   name        = "nat-sg"
-  description = "Allow HTTP/HTTPS from private subnets"
+  description = "Allow traffic from private subnets and SSH from public subnets"
   vpc_id      = aws_vpc.main.id
 
+  # Allow all traffic from private subnets
   ingress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = var.private_subnet_cidrs
+  }
+
+  # Allow SSH from public subnets (for management)
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = var.public_subnet_cidrs
+  }
+
+  # Allow ICMP (ping) from public subnets (for testing)
+  ingress {
+    from_port   = -1
+    to_port     = -1
+    protocol    = "icmp"
+    cidr_blocks = var.public_subnet_cidrs
   }
 
   egress {

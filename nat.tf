@@ -17,8 +17,16 @@ resource "aws_instance" "nat" {
     # Configure NAT with iptables
     apt-get update
     apt-get install -y iptables-persistent
-    iptables -t nat -A POSTROUTING -o eth0 -s ${var.vpc_cidr} -j MASQUERADE
+    
+    # Use ens5 interface instead of eth0 for Ubuntu 24.04
+    IFACE=$(ip -o -4 route show to default | awk '{print $5}')
+    iptables -t nat -A POSTROUTING -o $IFACE -s ${var.vpc_cidr} -j MASQUERADE
     netfilter-persistent save
+    
+    # Verify configuration
+    echo "Using interface: $IFACE for NAT"
+    sysctl net.ipv4.ip_forward
+    iptables -t nat -L -v
   EOF
 
   tags = {
