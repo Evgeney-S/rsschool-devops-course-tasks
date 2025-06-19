@@ -27,3 +27,8 @@ variable "github_repo" {
   type        = string
   default     = "rsschool-devops-course-tasks"
 }
+variable "common_course_tag" {
+  description = "Common tag for all resources in the course"
+  type        = string
+  default     = "AWS-DevOps-course-2025Q2"
+}
