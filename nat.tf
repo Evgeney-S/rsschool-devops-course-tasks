@@ -33,5 +33,9 @@ resource "aws_instance" "nat" {
     Name              = "nat-instance"
     common-course-tag = var.common_course_tag
   }
+
+  lifecycle {
+    ignore_changes = [user_data]
+  }
 }
 

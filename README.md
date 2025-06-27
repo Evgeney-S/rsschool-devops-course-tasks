@@ -1,98 +1,173 @@
 # RS School DevOps course
 
-## Task 2: Basic Infrastructure Configuration
+## Task 3: K3s Kubernetes Cluster on AWS
+This project deploys a K3s Kubernetes cluster on AWS using Terraform with proper network isolation and security.
 
-### Description
+### Architecture
+- VPC: Custom VPC with 2 public and 2 private subnets across 2 AZs
 
-Created basic infrastructure:
+- Bastion Host: Jump server in public subnet for secure access
 
-- VPC with 4 subnets in 2 different availability zones:  
+- NAT Instance: Custom NAT instance for private subnet internet access
 
-    - 2 public subnets in different AZs 
-    - 2 private subnets in different AZs
+- K3s Master: Kubernetes control plane in private subnet
 
-- Internet Gateway
+- K3s Worker: Kubernetes worker node in private subnet
 
-- Bastion host - configured to be an access point for other instances inside VPC
+- Security Groups: Properly configured for each component
 
-- NAT by EC2 instance
-
-- 3 EC2 instances (1 in public subnet, 2 in different private subnets)
-
-- Routing configuration:
-
-    - Instances in all subnets can reach each other
-    - Instances in public subnets can reach addresses outside VPC and vice-versa
-
-
-### Created infrastructure
-
-```
-/---[VPC (main)] ---------------------------------------------------------\
-|                                                                         |
-|   [Internet Gateway (main-igw)]                                         |
-|                                                                         |
-|   [Public Subnet (public-subnet-1)]                                     |
-|       [Route table (public-rt)]                                         |
-|       [Basion :: EC2 (bastion-host)] - [Sucurity Group (bastion-sg)]    |
-|       [NAT :: EC2 (nat-instance)] - [Sucurity Group (nat-sg)]           |
-|                                                                         |
-|                                                                         |
-|   [Private Subnet (private-subnet-1)]                                   |
-|       [Route table (private-rt)]                                        |
-|       [EC2 (test-private-1)] - [Sucurity Group (private-sg)]            |
-|                                                                         |
-|                                                                         |
-|   [Public Subnet (public-subnet-2)]                                     |
-|       [Route table (public-rt)]                                         |
-|       [EC2 (test-public-1)] - [Sucurity Group (public-sg)]              |
-|                                                                         |
-|                                                                         |
-|   [Private Subnet (private-subnet-2)]                                   |
-|       [Route table (private-rt)]                                        |
-|       [EC2 (test-private-2)] - [Sucurity Group (private-sg)]            |
-|                                                                         |
-\ ------------------------------------------------------------------------/
-```
-
-### Security groups:
-
-- **private-sg** - Allow all traffic from VPC
-- **public-sg** - Allow all traffic from anywhere
-- **bastion-sg** - Allow SSH from anywhere
-- **nat-sg** - Allow HTTP/HTTPS from private subnets
-
-
-### Usage
-
-**Used Terraform v1.12.2 with AWS provider v6.0.0 (the Latest)**
-
-**Initialize Terraform**
-
-Run once locally
+### Deployment
+1. Initialize Terraform
 ```
 terraform init
 ```
 
-**View changes**
+2. Review Configuration
+Check variables.tf for default values:
 
-Shows what changes will be made on the next application
+- Region: eu-north-1
+
+- Instance type: t3.micro
+
+- VPC CIDR: 10.0.0.0/16
+
+3. Deploy Infrastructure
 ```
 terraform plan
-```
-
-**Apply changes via Terraform**
-
-(if necessary)
-```
 terraform apply
 ```
 
-**Also, the changes will be applied via GitHub Actions on push or PR to the main branch**
+4. Get Connection Details
+```
+terraform output bastion_public_ip
+terraform output k3s_master_private_ip
+terraform output k3s_worker_private_ip
+```
 
-**Cleanup**
+## Accessing the Cluster
 
-To destroy the created resources:
+### From Bastion Host
+
+Connect to bastion:
+```
+ssh -i ~/.ssh/aws-rss-devops-course.pem ubuntu@<BASTION_PUBLIC_IP>
+```
+
+Connect to K3s master:
+```
+ssh ubuntu@<K3S_MASTER_PRIVATE_IP>
+```
+
+Check cluster status:
+```
+sudo k3s kubectl get nodes
+sudo k3s kubectl get all --all-namespaces
+```
+
+### From Local Computer
+
+Create SSH tunnel:
+```
+ssh -i ~/.ssh/aws-rss-devops-course.pem -L 6443:10.0.101.188:6443 ubuntu@<BASTION_PUBLIC_IP>
+```
+
+Copy kubeconfig (in new terminal):
+```
+# Get kubeconfig from K3s master
+scp -i ~/.ssh/aws-rss-devops-course.pem -o ProxyJump=ubuntu@<BASTION_PUBLIC_IP> ubuntu@<K3S_MASTER_IP>:/home/ubuntu/.kube/config ~/.kube/k3s-config
+
+# Edit for local access
+# replace "127.0.0.1" by "localhost" in ~/.kube/k3s-config
+```
+
+Use kubectl locally:
+```
+export KUBECONFIG=~/.kube/k3s-config
+kubectl get nodes
+kubectl get all --all-namespaces
+```
+
+## Cluster Verification
+
+### Check Nodes
+
+```
+kubectl get nodes
+```
+
+Expected output: 2 nodes (1 master, 1 worker) in Ready state
+
+### Deploy Test Application
+
+```
+kubectl apply -f https://k8s.io/examples/pods/simple-pod.yaml
+kubectl get pods
+kubectl get all --all-namespaces
+```
+
+## Troubleshooting
+
+### Memory Issues
+
+If experiencing memory issues on t3.micro instances:
+```
+# Create swap file
+sudo fallocate -l 1G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+```
+
+### K3s Service Issues
+
+```
+# Check K3s status
+sudo systemctl status k3s
+sudo journalctl -u k3s -f
+
+# Restart if needed
+sudo systemctl restart k3s
+```
+
+### Security Considerations
+
+- All Kubernetes nodes are in private subnets
+
+- Access only through bastion host
+
+- Security groups restrict traffic to necessary ports
+
+- NAT instance provides controlled internet access
+
+## Cleanup
+
 ```
 terraform destroy
 ```
+
+### File Structure
+
+```
+├── bastion.tf              # Bastion host configuration
+├── ec2_instances.tf         # K3s master and worker nodes
+├── nat.tf                   # NAT instance configuration
+├── security_groups.tf       # Security group definitions
+├── vpc.tf                   # VPC, subnets, and routing
+├── variables.tf             # Input variables
+├── outputs.tf               # Output values
+├── scripts/
+│   ├── k3s-master.sh       # K3s master installation script
+│   └── k3s-worker.sh       # K3s worker installation script
+└── README.md               # This documentation
+```
+
+## Notes
+
+- The cluster uses a custom K3s token for node authentication
+
+- All instances use Ubuntu 24.04 LTS AMI
+
+- Cluster is accessible both from bastion host and local computer via SSH tunnel
+
+
