@@ -71,3 +71,14 @@ variable "key_name" {
   description = "SSH key name for EC2"
   default     = "aws-rss-devops-course"
 }
+
+variable "k3s_token" {
+  description = "Token for K3s cluster"
+  type        = string
+  default     = "aws-rss-devops-course-k3s-token"
+  sensitive   = true
+}
+
+locals {
+  k3s_token = var.k3s_token != "" ? var.k3s_token : random_password.k3s_token.result
+}

@@ -114,3 +114,61 @@ resource "aws_security_group" "nat" {
     common-course-tag = var.common_course_tag
   }
 }
+
+resource "aws_security_group" "k3s" {
+  name        = "k3s-sg"
+  description = "Security group for K3s cluster"
+  vpc_id      = aws_vpc.main.id
+
+  # SSH access from bastion
+  ingress {
+    from_port       = 22
+    to_port         = 22
+    protocol        = "tcp"
+    security_groups = [aws_security_group.bastion.id]
+  }
+
+  # K3s API server
+  ingress {
+    from_port   = 6443
+    to_port     = 6443
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr]
+  }
+
+  # Flannel VXLAN
+  ingress {
+    from_port   = 8472
+    to_port     = 8472
+    protocol    = "udp"
+    cidr_blocks = [var.vpc_cidr]
+  }
+
+  # Kubelet API
+  ingress {
+    from_port   = 10250
+    to_port     = 10250
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr]
+  }
+
+  # NodePort services
+  ingress {
+    from_port   = 30000
+    to_port     = 32767
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "k3s-sg"
+  }
+}
+
