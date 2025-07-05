@@ -4,7 +4,7 @@
 
 ### 
 
-* Install Minikube
+- Install Minikube
 
 ```
 choco install minikube
@@ -19,7 +19,7 @@ minikube start
 kubectl get all
 ```
 
-* Install Helm
+- Install Helm
 
 ```
 choco install kubernetes-helm
@@ -29,7 +29,7 @@ helm version
 helm list
 ```
 
-* Deploying and removing the Nginx chart from Bitnami
+- Deploying the Nginx chart from Bitnami
 
 ```
 helm install my-release oci://registry-1.docker.io/bitnamicharts/nginx
@@ -39,101 +39,55 @@ helm list
 kubectl get all --all-namespaces
 ```
 
-* Prepare the Cluster (managing persistent volumes (PV) and persistent volume claims (PVC))
+## Jenkins Helm Chart
 
-File `scripts/test-pvc.yaml`
+This Helm chart deploys Jenkins with Configuration as Code (JCasC) on Kubernetes.
 
-```
-minikube addons enable default-storageclass
-minikube addons enable storage-provisioner
+### Features
 
-kubectl apply -f test-pvc.yaml
+- Jenkins with JCasC configuration
+- Persistent volume for Jenkins data
+- Pre-configured authentication and security
+- Automatically created "Hello World" job via JCasC
+- Job DSL plugin included
 
-# check result
-kubectl get pvc
-kubectl get pv
-kubectl describe pvc test-pvc
+### Installation
 
-# remove test PVC
-kubectl delete -f test-pvc.yaml
-```
-
-### Intalling Jenkins
-
-* Create namespace for Jenkins
-
-```
-kubectl create namespace jenkins
-```
-
-* Add Jenkins Helm repository
-
+1. Add Jenkins Helm repository:
 ```
 helm repo add jenkins https://charts.jenkins.io
 helm repo update
 ```
 
-* Install Jenkins with persistent volume
-
+2. Install the chart:
 ```
-helm install jenkins jenkins/jenkins --namespace jenkins --set persistence.enabled=true --set persistence.size=8Gi
-```
-
-* Get your 'admin' user password by running:
-```
-# bash
-kubectl exec --namespace jenkins -it svc/jenkins -c jenkins -- /bin/cat /run/secrets/additional/chart-admin-password && echo
-
-#PowerShell
-kubectl exec --namespace jenkins -it svc/jenkins -c jenkins -- /bin/cat /run/secrets/additional/chart-admin-password; echo ""
+helm dependency update jenkins-chart/
+helm install jenkins jenkins-chart/ --namespace jenkins --create-namespace
 ```
 
-
-* Set up browser access
-
+3. Access Jenkins:
 ```
 kubectl --namespace jenkins port-forward svc/jenkins 8080:8080
 ```
 
-* Login Jenkins:
+4. Login credentials:
+- Username: `admin`
+- Password: `admin123`
 
-    - http://localhost:8080
-    - Username: admin
-    - Password: (from previous step)
+### Configuration
 
-* Create freestyle project
+The chart includes:
+- JCasC security configuration
+- Persistent volume (8Gi)
+- Job DSL plugin
+- Pre-configured "hello-world" job
 
-    - New Item → Freestyle project → имя "hello-world"
-    - Build Steps → Add build step → Execute shell
-    - Add command: echo "Hello world"
-    - Save → Build Now
-
-* Delete Jenkins (to install using JCasC)
+### Uninstall
 
 ```
-# delete pod
-kubectl delete pod -n jenkins -l app.kubernetes.io/name=jenkins
-
-# uninstall jenkins
 helm uninstall jenkins --namespace jenkins
 ```
 
-* Install Jenkins with JCasC configuration
-
-File `jenkins-values.yaml`
-```
-helm install jenkins jenkins/jenkins --namespace jenkins -f jenkins-values.yaml
-
-# set port-forward
-kubectl --namespace jenkins port-forward svc/jenkins 8080:8080
-```
-
-* Check Jenkins and job created
-
-    - Check Jenkins in browser: http://localhost:8080
-    - Username: admin
-    - Password: admin123 (set in securityRealm in jenkins-values.yaml)
-    - "Hello world" job is automatically created via JCasC
 
 ### GitHub Actions (GHA) Pipeline (5 points)
 - A GHA pipeline is set up to deploy Jenkins.
