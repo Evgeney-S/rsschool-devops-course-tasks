@@ -127,3 +127,15 @@ helm install jenkins jenkins/jenkins --namespace jenkins -f jenkins-values.yaml
 # set port-forward
 kubectl --namespace jenkins port-forward svc/jenkins 8080:8080
 ```
+
+* Check Jenkins and job created
+
+    - Check Jenkins in browser: http://localhost:8080
+    - Username: admin
+    - Password: admin123 (set in securityRealm in jenkins-values.yaml)
+    - "Hello world" job is automatically created via JCasC
+
+### GitHub Actions (GHA) Pipeline (5 points)
+- A GHA pipeline is set up to deploy Jenkins.
+
+Automatically applied for local installation, as it was told on the lecture.
