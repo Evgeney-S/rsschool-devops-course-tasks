@@ -1,0 +1,29 @@
+controller:
+  JCasC:
+    defaultConfig: true
+    configScripts:
+      security: |
+        jenkins:
+          securityRealm:
+            local:
+              allowsSignup: false
+              users:
+                - id: "admin"
+                  password: "admin123"
+          authorizationStrategy:
+            loggedInUsersCanDoAnything:
+              allowAnonymousRead: false
+      jobs: |
+        jobs:
+          - script: >
+              freeStyleJob('hello-world') {
+                description('Hello World job created via JCasC')
+                steps {
+                  shell('echo "Hello world"')
+                }
+              }
+  persistence:
+    enabled: true
+    size: 8Gi
+  additionalPlugins:
+    - job-dsl:1.87
