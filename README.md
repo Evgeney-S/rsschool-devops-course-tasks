@@ -2,17 +2,17 @@
 
 ### Introduction
 
-All enviroment was srt up in previos task.
+All environment was set up in previous task.
 Npm scripts have been created to automate environment management (`package.json`):
 
 ```
-# Start enviroment
+# Start environment
 npm run start
 
-# Start enviroment
+# Start environment
 npm run stop
 
-# Enviroment status
+# Environment status
 npm run status
 ```
 
