@@ -3,6 +3,9 @@
 ### Introduction
 
 All environment was set up in previous task.
+ 
+The environment was set up in Windows OS using PowerShell to manage it.
+
 Npm scripts have been created to automate environment management (`package.json`):
 
 ```
