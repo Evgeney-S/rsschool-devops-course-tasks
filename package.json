@@ -1,0 +1,11 @@
+{
+  "name": "rsschool-devops-k8s",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "powershell -ExecutionPolicy Bypass -File ./scripts/start-cluster.ps1",
+    "stop": "powershell -ExecutionPolicy Bypass -File ./scripts/stop-cluster.ps1",
+    "status": "powershell -ExecutionPolicy Bypass -File ./scripts/check-status.ps1",
+    "deploy": "powershell -ExecutionPolicy Bypass -File ./scripts/build-and-deploy.ps1",
+    "open": "powershell -ExecutionPolicy Bypass -File ./scripts/open-app.ps1"
+  }
+}
