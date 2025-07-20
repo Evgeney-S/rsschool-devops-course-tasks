@@ -16,3 +16,4 @@ terraform.log
 *.tfoverride.json
 
 scripts/setup-environment.ps1
+_temp/
