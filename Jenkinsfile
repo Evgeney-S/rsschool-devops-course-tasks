@@ -1,7 +1,7 @@
 pipeline {
     agent {
-    kubernetes {
-        yaml """
+        kubernetes {
+            yaml """
 apiVersion: v1
 kind: Pod
 spec:
@@ -14,14 +14,13 @@ spec:
   - name: docker
     image: gcr.io/kaniko-project/executor:latest
     command:
-    - /busybox/sh
+    - /kaniko/executor
     args:
-    - -c
-    - "while true; do sleep 30; done"
+    - --help
 """
         defaultContainer 'python'
+        }
     }
-}
 
     environment {
         DOCKER_IMAGE = "evgeneys/flask-app:latest"
