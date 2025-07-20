@@ -1,5 +1,28 @@
 pipeline {
-    agent any
+    agent {
+        kubernetes {
+            yaml """
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: jnlp
+    image: jenkins/inbound-agent:latest
+    args: ['\$(JENKINS_SECRET)', '\$(JENKINS_NAME)']
+  - name: python
+    image: python:3.11
+    command:
+    - cat
+    tty: true
+  - name: docker
+    image: gcr.io/kaniko-project/executor:latest
+    command:
+    - cat
+    tty: true
+"""
+            defaultContainer 'python'
+        }
+    }
 
     environment {
         DOCKER_IMAGE = "evgeneys/flask-app:latest"
@@ -40,8 +63,16 @@ pipeline {
 
         stage('Docker Build and Push') {
             steps {
-                script {
-                    docker.build("${DOCKER_IMAGE}").push()
+                container('docker') {
+                    script {
+                        sh '''
+                        /kaniko/executor \
+                          --context `pwd`/flask-app \
+                          --dockerfile `pwd`/flask-app/Dockerfile \
+                          --destination=${DOCKER_IMAGE} \
+                          --cache=true
+                        '''
+                    }
                 }
             }
         }
