@@ -27,32 +27,64 @@ helm list -A
 
 ## Update Jenkins 
 
-* Create new container with Helm and kubectl
-
-Dockerfile — `Jenkins/Dockerfile`
+Jenkins was reinstalled, using official Helm chart Jenkins and custom file with values - `helm/jenkins/values.yaml`
 
 ```
-docker build -t evgeneys/jenkins-with-tools:latest .
-docker push evgeneys/jenkins-with-tools:latest
+# uninstall Jenkins
+helm uninstall jenkins -n jenkins
+kubectl delete namespace jenkins
+kubectl get all -n jenkins
+kubectl get ns
+
+# install Jenkins
+helm install jenkins jenkins/jenkins -n jenkins -f ./helm/jenkins/values.yaml
 ```
 
-Updated Helm chart values
+*  Installing other required components
 
 ```
-# update jenkins
-helm upgrade --install jenkins ./jenkins-chart -n jenkins
+# log in the Jenkins pod
+kubectl exec -it jenkins-0 -n jenkins -- /bin/bash
 
-# check status
-kubectl get pods -n jenkins
+# update packages and install curl and others
+apt-get update && apt-get install -y curl wget unzip gnupg2 lsb-release
+
+# install cubectl
+KUBECTL_VERSION=$(curl -Ls https://dl.k8s.io/release/stable.txt)
+curl -LO "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
+chmod +x kubectl
+mv kubectl /usr/local/bin/
+kubectl version --client
+
+# install Helm
+HELM_VERSION="v3.14.4"
+curl -LO "https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz"
+tar -zxvf "helm-${HELM_VERSION}-linux-amd64.tar.gz"
+mv linux-amd64/helm /usr/local/bin/helm
+helm version
+
+```
+
+* Install Kaniko
+Created manifest `kaniko-sa.yaml`
+Apply manifest:
+```
+kubectl apply -f kaniko-sa.yaml
 ```
 
 * Set port forwarding:
 ```
-start cmd /k "kubectl port-forward svc/jenkins 8080:8080 -n jenkins"
+kubectl port-forward svc/jenkins 8080:8080 -n jenkins
 ```
-
 Now Jenkins UI can be opened in browser by adress:
 [http://localhost:8080](http://localhost:8080)
+
+
+
+
+
+
+
 
 
 ## App
@@ -110,26 +142,3 @@ withSonarQubeEnv('SonarQube') {
     sh 'sonar-scanner -Dsonar.projectKey=flask-app -Dsonar.sources=flask-app'
 }
 ```
-
-## Installing the other required components into the Jenkins container
-
-* Log in to Jenkins pod
-```
-kubectl exec -n jenkins -it jenkins-0 -- bash
-```
-
-* Helm
-```
-curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-helm version
-```
-
-* kubectl
-```
-curl -LO "https://dl.k8s.io/release/$(curl -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-kubectl version --client
-```
-
-* Kaniko
-
