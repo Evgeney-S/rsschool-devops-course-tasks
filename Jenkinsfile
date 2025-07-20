@@ -1,14 +1,11 @@
 pipeline {
     agent {
-        kubernetes {
-            yaml """
+    kubernetes {
+        yaml """
 apiVersion: v1
 kind: Pod
 spec:
   containers:
-  - name: jnlp
-    image: jenkins/inbound-agent:latest
-    args: ['\$(JENKINS_SECRET)', '\$(JENKINS_NAME)']
   - name: python
     image: python:3.11
     command:
@@ -17,12 +14,14 @@ spec:
   - name: docker
     image: gcr.io/kaniko-project/executor:latest
     command:
-    - cat
-    tty: true
+    - /busybox/sh
+    args:
+    - -c
+    - "while true; do sleep 30; done"
 """
-            defaultContainer 'python'
-        }
+        defaultContainer 'python'
     }
+}
 
     environment {
         DOCKER_IMAGE = "evgeneys/flask-app:latest"
