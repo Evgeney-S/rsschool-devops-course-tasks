@@ -30,7 +30,7 @@ spec:
     }
 
     triggers {
-        githubPush()
+        pollSCM('H/5 * * * *')
     }
 
     stages {
