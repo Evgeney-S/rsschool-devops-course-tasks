@@ -57,31 +57,27 @@ spec:
         // }
 
         stage('Docker Build') {
+            when {
+                expression { return params.RUN_DOCKER_BUILD }
+            }
             steps {
-                script {
-                    if (!params.RUN_DOCKER_BUILD) {
-                        input message: 'Build Docker image?'
-                    }
-                    container('env') {
-                        sh 'docker build -t ${DOCKER_IMAGE} flask-app'
-                    }
+                container('env') {
+                    sh 'docker build -t ${DOCKER_IMAGE} flask-app'
                 }
             }
         }
 
         stage('Push to Docker Hub') {
+            when {
+                expression { return params.RUN_DOCKER_PUSH }
+            }
             steps {
-                script {
-                    if (!params.RUN_DOCKER_PUSH) {
-                        input message: 'Push Docker image to Docker Hub?'
-                    }
-                    container('env') {
-                        withCredentials([usernamePassword(credentialsId: "${REGISTRY_CREDENTIALS}", usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                            sh '''
-                            echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-                            docker push ${DOCKER_IMAGE}
-                            '''
-                        }
+                container('env') {
+                    withCredentials([usernamePassword(credentialsId: "${REGISTRY_CREDENTIALS}", usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        sh '''
+                        echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+                        docker push ${DOCKER_IMAGE}
+                        '''
                     }
                 }
             }
