@@ -62,7 +62,7 @@ spec:
             }
             steps {
                 container('env') {
-                    sh 'docker build -t ${DOCKER_IMAGE} flask-app'
+                    sh 'docker build -t ${DOCKER_IMAGE} flask-app'  
                 }
             }
         }
@@ -75,8 +75,8 @@ spec:
                 container('env') {
                     withCredentials([usernamePassword(credentialsId: "${REGISTRY_CREDENTIALS}", usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
                         sh '''
-                        echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-                        docker push ${DOCKER_IMAGE}
+                            echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+                            docker push ${DOCKER_IMAGE}
                         '''
                     }
                 }
@@ -86,7 +86,13 @@ spec:
         stage('Deploy to Kubernetes') {
             steps {
                 container('env') {
-                    sh 'helm upgrade --install flask-app helm/flask-app --set image.repository=evgeneys/flask-app --set image.tag=latest'
+                    sh '''
+                        helm upgrade --install flask-app helm/flask-app \
+                            --namespace jenkins \
+                            --create-namespace \
+                            --set image.repository=evgeneys/flask-app \
+                            --set image.tag=latest'
+                    '''
                 }
             }
         }
@@ -98,18 +104,60 @@ spec:
                 }
             }
         }
+
+        stage('App Verification 2') {
+            steps {
+                container('env') {
+                    sh '''
+                    NODE_PORT=$(kubectl get svc flask-app -n default -o=jsonpath="{.spec.ports[0].nodePort}")
+                    APP_URL="http://$(minikube ip):$NODE_PORT/health"
+                    echo "⏳ Waiting for app at $APP_URL ..."
+                    sleep 5
+                    RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "$APP_URL")
+                    if [ "$RESPONSE" -ne 200 ]; then
+                    echo "❌ App verification failed. Status: $RESPONSE"
+                    exit 1
+                    fi
+                    echo "✅ App is healthy"
+                    '''
+                }
+            }
+        }
     }
 
     post {
         success {
-            mail to: 'your-email@example.com',
-                 subject: 'Pipeline Succeeded',
-                 body: "Pipeline for flask-app passed successfully"
+        echo '✅ Pipeline successed'
+        container('env') {
+            withCredentials([
+            string(credentialsId: 'TELEGRAM_BOT_TOKEN', variable: 'TG_TOKEN'),
+            string(credentialsId: 'TELEGRAM_CHAT_ID', variable: 'TG_CHAT')
+            ]) {
+            sh """
+                curl -s -X POST https://api.telegram.org/bot$TG_TOKEN/sendMessage \\
+                -d chat_id=$TG_CHAT \\
+                -d text="✅ Jenkins pipeline succeeded: Job '$JOB_NAME' #$BUILD_NUMBER"
+            """
+            }
         }
+        }
+
         failure {
-            mail to: 'your-email@example.com',
-                 subject: 'Pipeline Failed',
-                 body: "Pipeline for flask-app failed"
+        echo '❌ Pipeline failed'
+        container('env') {
+            withCredentials([
+            string(credentialsId: 'TELEGRAM_BOT_TOKEN', variable: 'TG_TOKEN'),
+            string(credentialsId: 'TELEGRAM_CHAT_ID', variable: 'TG_CHAT')
+            ]) {
+            sh """
+                curl -s -X POST https://api.telegram.org/bot$TG_TOKEN/sendMessage \\
+                -d chat_id=$TG_CHAT \\
+                -d text="❌ Jenkins pipeline failed: Job '$JOB_NAME' #$BUILD_NUMBER"
+            """
+            }
+        }
         }
     }
+
+
 }
