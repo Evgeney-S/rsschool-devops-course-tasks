@@ -88,7 +88,7 @@ Now Jenkins UI can be opened in browser by adress:
 
 
 
-CI Jenkins agent: Python 3.11 + Docker CLI + Helm + Minikube + SonarScanner
+
 
 
 

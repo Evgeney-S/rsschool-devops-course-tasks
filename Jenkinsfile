@@ -112,9 +112,6 @@ spec:
                 container('env') {
                     sh '''
                         kubectl get pods -n jenkins
-                        echo "⏳ Waiting for app ..."
-                        sleep 10
-                        kubectl get pods -n jenkins
                         curl --fail http://flask-app.jenkins.svc.cluster.local:5000/health
                     '''
                 }
@@ -129,26 +126,26 @@ spec:
         //     }
         // }
 
-        stage('App Verification 3') {
-            steps {
-                container('env') {
-                    sh '''
-                    kubectl get pods -n jenkins -l app.kubernetes.io/name=flask-app
-                    kubectl logs -n jenkins -l app.kubernetes.io/name=flask-app --tail=30
-                    NODE_PORT=$(kubectl get svc flask-app -n jenkins -o=jsonpath="{.spec.ports[0].nodePort}")
-                    APP_URL="http://$(minikube ip):$NODE_PORT/health"
-                    echo "⏳ Waiting for app at $APP_URL ..."
-                    sleep 5
-                    RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "$APP_URL")
-                    if [ "$RESPONSE" -ne 200 ]; then
-                    echo "❌ App verification failed. Status: $RESPONSE"
-                    exit 1
-                    fi
-                    echo "✅ App is healthy"
-                    '''
-                }
-            }
-        }
+        // stage('App Verification 3') {
+        //     steps {
+        //         container('env') {
+        //             sh '''
+        //             kubectl get pods -n jenkins -l app.kubernetes.io/name=flask-app
+        //             kubectl logs -n jenkins -l app.kubernetes.io/name=flask-app --tail=30
+        //             NODE_PORT=$(kubectl get svc flask-app -n jenkins -o=jsonpath="{.spec.ports[0].nodePort}")
+        //             APP_URL="http://$(minikube ip):$NODE_PORT/health"
+        //             echo "⏳ Waiting for app at $APP_URL ..."
+        //             sleep 5
+        //             RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "$APP_URL")
+        //             if [ "$RESPONSE" -ne 200 ]; then
+        //             echo "❌ App verification failed. Status: $RESPONSE"
+        //             exit 1
+        //             fi
+        //             echo "✅ App is healthy"
+        //             '''
+        //         }
+        //     }
+        // }
     }
 
     post {
