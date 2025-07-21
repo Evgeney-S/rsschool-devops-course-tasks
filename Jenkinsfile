@@ -6,7 +6,7 @@ apiVersion: v1
 kind: Pod
 spec:
   containers:
-  - name: devops
+  - name: env
     image: evgeneys/flask-app-build-env:latest
     command:
     - cat
@@ -62,7 +62,7 @@ spec:
                     if (!params.RUN_DOCKER_BUILD) {
                         input message: 'Build Docker image?'
                     }
-                    container('devops') {
+                    container('env') {
                         sh 'docker build -t ${DOCKER_IMAGE} flask-app'
                     }
                 }
@@ -75,7 +75,7 @@ spec:
                     if (!params.RUN_DOCKER_PUSH) {
                         input message: 'Push Docker image to Docker Hub?'
                     }
-                    container('devops') {
+                    container('env') {
                         withCredentials([usernamePassword(credentialsId: "${REGISTRY_CREDENTIALS}", usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
                             sh '''
                             echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
@@ -89,7 +89,7 @@ spec:
 
         stage('Deploy to Kubernetes') {
             steps {
-                container('devops') {
+                container('env') {
                     sh 'helm upgrade --install flask-app helm/flask-app --set image.repository=evgeneys/flask-app --set image.tag=latest'
                 }
             }
@@ -97,7 +97,7 @@ spec:
 
         stage('App Verification') {
             steps {
-                container('devops') {
+                container('env') {
                     sh 'curl --fail http://flask-app.default.svc.cluster.local:5000/health'
                 }
             }
