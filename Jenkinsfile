@@ -92,7 +92,6 @@ spec:
                 echo '⏩ Docker image building'
                 container('env') {
                     sh '''
-                        # docker version
                         docker build -t ${DOCKER_IMAGE} flask-app
                         set +x
                         echo "✅ Docker image built successfully!"
@@ -145,9 +144,6 @@ spec:
                         RESPONSE=$(curl -s -w "HTTPSTATUS:%{http_code}" http://flask-app.jenkins.svc.cluster.local:5000/health)
                         BODY=$(echo "$RESPONSE" | sed -e 's/HTTPSTATUS:.*//')
                         STATUS=$(echo "$RESPONSE" | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
-                        # echo "Response: $RESPONSE"
-                        # echo "Status: $STATUS"
-                        # echo "Body: $BODY"
                         if [ "$STATUS" -eq 200 ]; then
                             set +x
                             echo "✅ App Verification passed successfully!"
