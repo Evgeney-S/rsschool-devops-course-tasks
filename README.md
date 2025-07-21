@@ -41,6 +41,8 @@ helm install jenkins jenkins/jenkins -n jenkins -f ./helm/jenkins/values.yaml
 ```
 
 *  Installing other required components
+    Installd manualy.
+    TODO :: add installation to helm chart
 
 ```
 # log in the Jenkins pod
@@ -64,13 +66,6 @@ mv linux-amd64/helm /usr/local/bin/helm
 helm version
 
 ```
-<!-- 
-* Install Kaniko
-Created manifest `kaniko-sa.yaml`
-Apply manifest:
-```
-kubectl apply -f kaniko-sa.yaml
-``` -->
 
 * Service account for Jenkins 
 Manifest - `helm/jenkins/rbac-jenkins-admin.yaml`
@@ -85,13 +80,6 @@ kubectl port-forward svc/jenkins 8080:8080 -n jenkins
 ```
 Now Jenkins UI can be opened in browser by adress:
 [http://localhost:8080](http://localhost:8080)
-
-
-
-
-
-
-
 
 
 ## App
@@ -127,8 +115,6 @@ helm upgrade --install sonarqube sonarqube/sonarqube \
 kubectl get pods -n sonarqube
 kubectl get svc -n sonarqube
 
-# get url
-
 ```
 
 * Get URL
@@ -143,9 +129,35 @@ minikube service -n sonarqube sonarqube-sonarqube --url
 * Install plugin `SonarQube Scanner` in Jenkins [Manage Jenkins → Plugins]
 * Add SonarQube server [Manage Jenkins → Configure System]
 * Install SonarScanner [Manage Jenkins → Global Tool Configuration]
-* Can be used in Jenkins:
+* Usage in Jenkins:
 ```
-withSonarQubeEnv('SonarQube') {
-    sh 'sonar-scanner -Dsonar.projectKey=flask-app -Dsonar.sources=flask-app'
+withSonarQubeEnv('sonarqube') {
+    sh '''
+        sonar-scanner \
+        -Dsonar.projectKey=flask-app \
+        -Dsonar.sources=. \
+        -Dsonar.host.url=$SONAR_HOST_URL \
+        -Dsonar.login=$SONAR_AUTH_TOKEN
+    '''
 }
 ```
+
+
+## Jenkins pipeline configuration
+
+* Jenkinsfile stored in root of project (branch)
+* Created Pipeline project `flask-app` in Jenkins
+* Definition - Pipeline script from SCM
+* Configured Git - Repository URL and Branch (*/task-6)
+* Congigured Pull SCM (H/5 * * * *) - check every 5 minutes
+* Manual Docker image building and pushing to Docker Hub set up via parameters in Jenkinsfile
+* SonarQube configuration:
+    - Initial set up in browser
+    - Create token `jenkins-token` [My Account → Security]
+    - Create project `flask-app`
+* SonarQube setup in Jenkins
+    - Install SonarQube Scanner for Jenkins plugin
+    - Add SonarQube servers [Manage Jenkins → Configure System]
+        Server URL: `http://sonarqube-sonarqube.sonarqube.svc.cluster.local:9000`
+        Credentials → Add → Kind: Secret Text, вставь token → Name: `sonarqube-token`
+    - Add SonarQube Scanner tool [Manage Jenkins → Global Tool Configuration]
