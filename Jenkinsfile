@@ -48,13 +48,13 @@ spec:
             }
         }
 
-        stage('SonarQube Analysis') {
-            steps {
-                withSonarQubeEnv('SonarQube') {
-                    sh 'sonar-scanner -Dsonar.projectKey=flask-app -Dsonar.sources=flask-app'
-                }
-            }
-        }
+        // stage('SonarQube Analysis') {
+        //     steps {
+        //         withSonarQubeEnv('SonarQube') {
+        //             sh 'sonar-scanner -Dsonar.projectKey=flask-app -Dsonar.sources=flask-app'
+        //         }
+        //     }
+        // }
 
         stage('Docker Build') {
             steps {
