@@ -134,9 +134,9 @@ spec:
                     sh '''
                         # curl --fail http://flask-app.jenkins.svc.cluster.local:5000/health
                         # STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://flask-app.jenkins.svc.cluster.local:5000/health)
-                        
+
                         RESPONSE=$(curl -s -w "HTTPSTATUS:%{http_code}" http://flask-app.jenkins.svc.cluster.local:5000/health)
-                        BODY=$(echo "$RESPONSE" | sed -e 's/HTTPSTATUS\:.*//')
+                        BODY=$(echo "$RESPONSE" | sed -e 's/HTTPSTATUS:.*//')
                         STATUS=$(echo "$RESPONSE" | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
                         echo "Response: $RESPONSE"
                         echo "Status: $STATUS"
