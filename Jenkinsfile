@@ -105,19 +105,21 @@ spec:
         //     }
         // }
 
-        stage('App Verification 2') {
-            steps {
-                container('env') {
-                    sh 'curl --fail http://flask-app:5000/health'
-                }
-            }
-        }
+        // stage('App Verification 2') {
+        //     steps {
+        //         container('env') {
+        //             sh 'curl --fail http://flask-app:5000/health'
+        //         }
+        //     }
+        // }
 
         stage('App Verification 3') {
             steps {
                 container('env') {
                     sh '''
-                    NODE_PORT=$(kubectl get svc flask-app -n default -o=jsonpath="{.spec.ports[0].nodePort}")
+                    kubectl get pods -n jenkins -l app.kubernetes.io/name=flask-app
+                    kubectl logs -n jenkins -l app.kubernetes.io/name=flask-app --tail=30
+                    NODE_PORT=$(kubectl get svc flask-app -n jenkins -o=jsonpath="{.spec.ports[0].nodePort}")
                     APP_URL="http://$(minikube ip):$NODE_PORT/health"
                     echo "⏳ Waiting for app at $APP_URL ..."
                     sleep 5
