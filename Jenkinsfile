@@ -91,7 +91,7 @@ spec:
                             --namespace jenkins \
                             --create-namespace \
                             --set image.repository=evgeneys/flask-app \
-                            --set image.tag=latest'
+                            --set image.tag=latest
                     '''
                 }
             }
@@ -130,13 +130,14 @@ spec:
         echo '✅ Pipeline successed'
         container('env') {
             withCredentials([
-            string(credentialsId: 'TELEGRAM_BOT_TOKEN', variable: 'TG_TOKEN'),
-            string(credentialsId: 'TELEGRAM_CHAT_ID', variable: 'TG_CHAT')
+            string(credentialsId: 'TELEGRAM_BOT_TOKEN', variable: 'TG_BOT_TOKEN'),
+            string(credentialsId: 'TELEGRAM_CHAT_ID', variable: 'TG_CHAT_ID')
             ]) {
             sh """
-                curl -s -X POST https://api.telegram.org/bot$TG_TOKEN/sendMessage \\
-                -d chat_id=$TG_CHAT \\
-                -d text="✅ Jenkins pipeline succeeded: Job '$JOB_NAME' #$BUILD_NUMBER"
+                curl -s -X POST https://api.telegram.org/bot$TG_BOT_TOKEN/sendMessage \
+                -d parse_mode="HTML" \
+                -d chat_id=$TG_CHAT_ID \
+                -d text="✅ Jenkins pipeline succeeded: '$JOB_NAME' #$BUILD_NUMBER"
             """
             }
         }
@@ -146,13 +147,14 @@ spec:
         echo '❌ Pipeline failed'
         container('env') {
             withCredentials([
-            string(credentialsId: 'TELEGRAM_BOT_TOKEN', variable: 'TG_TOKEN'),
-            string(credentialsId: 'TELEGRAM_CHAT_ID', variable: 'TG_CHAT')
+            string(credentialsId: 'TELEGRAM_BOT_TOKEN', variable: 'TG_BOT_TOKEN'),
+            string(credentialsId: 'TELEGRAM_CHAT_ID', variable: 'TG_CHAT_ID')
             ]) {
             sh """
-                curl -s -X POST https://api.telegram.org/bot$TG_TOKEN/sendMessage \\
-                -d chat_id=$TG_CHAT \\
-                -d text="❌ Jenkins pipeline failed: Job '$JOB_NAME' #$BUILD_NUMBER"
+                curl -s -X POST https://api.telegram.org/bot$TG_BOT_TOKEN/sendMessage \
+                -d parse_mode="HTML" \
+                -d chat_id=$TG_CHAT_ID \
+                -d text="❌ Jenkins pipeline failed: '$JOB_NAME' #$BUILD_NUMBER"
             """
             }
         }
