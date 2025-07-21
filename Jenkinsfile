@@ -41,22 +41,31 @@ spec:
     stages {
         stage('Install dependencies') {
             steps {
+                echo '⏩ Application build (installing dependencies)'
                 dir('flask-app') {
-                    sh 'pip install -r requirements.txt'
+                    sh '''
+                        pip install -r requirements.txt'
+                        echo "✅ Application build completed successfully (dependencies installed)!"
+                    '''
                 }
             }
         }
 
         stage('Unit Test') {
             steps {
+                echo '⏩ Unit tests'
                 dir('flask-app') {
-                    sh 'python -m unittest test_main.py'
+                    sh '''
+                        python -m unittest test_main.py
+                        echo "✅ Unit tests passed successfully!"
+                    '''
                 }
             }
         }
 
         // stage('SonarQube Analysis') {
         //     steps {
+        //         echo '⏩ Security check with SonarQube'
         //         withSonarQubeEnv('SonarQube') {
         //             sh 'sonar-scanner -Dsonar.projectKey=flask-app -Dsonar.sources=flask-app'
         //         }
@@ -68,10 +77,12 @@ spec:
                 expression { return params.RUN_DOCKER_BUILD }
             }
             steps {
+                echo '⏩ Docker image building'
                 container('env') {
                     sh '''
-                        docker version
+                        // docker version
                         docker build -t ${DOCKER_IMAGE} flask-app
+                        echo "✅ Docker image built successfully!"
                     '''
                 }
             }
@@ -82,11 +93,13 @@ spec:
                 expression { return params.RUN_DOCKER_PUSH }
             }
             steps {
+                echo '⏩ Pushing Docker image to Docker Hub'
                 container('env') {
                     withCredentials([usernamePassword(credentialsId: "${REGISTRY_CREDENTIALS}", usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
                         sh '''
                             echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
                             docker push ${DOCKER_IMAGE}
+                            echo "✅ Docker image pushed successfully!"
                         '''
                     }
                 }
@@ -95,6 +108,7 @@ spec:
 
         stage('Deploy to Kubernetes') {
             steps {
+                echo '⏩ Deployment to the K8s cluster with Helm'
                 container('env') {
                     sh '''
                         helm upgrade --install flask-app helm/flask-app \
@@ -102,6 +116,7 @@ spec:
                             --create-namespace \
                             --set image.repository=evgeneys/flask-app \
                             --set image.tag=latest
+                        echo "✅ Deployment completed successfully!"
                     '''
                 }
             }
@@ -109,43 +124,29 @@ spec:
 
         stage('App Verification') {
             steps {
+                echo '⏩ Application verification'
                 container('env') {
                     sh '''
-                        kubectl get pods -n jenkins
-                        curl --fail http://flask-app.jenkins.svc.cluster.local:5000/health
+                        // curl --fail http://flask-app.jenkins.svc.cluster.local:5000/health
+                        // STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://flask-app.jenkins.svc.cluster.local:5000/health)
+                        RESPONSE=$(curl -s -w "___STATUS_CODE___%{http_code}" http://flask-app.jenkins.svc.cluster.local:5000/health)
+                        echo "Response: $RESPONSE"
+                        BODY=$(echo "$RESPONSE" | sed 's/___STATUS_CODE___.*//')
+                        STATUS=$(echo "$RESPONSE" | sed 's/.*___STATUS_CODE___//')
+                        if [ "$STATUS" -eq 200 ]; then
+                            echo "✅ App Verification passed successfully!"
+                            echo "📦 App response:"
+                            echo "$BODY"
+                        else
+                            echo "❌ App Verification error. Status: $STATUS"
+                            kubectl get pods -n jenkins
+                            exit 1
+                        fi
                     '''
                 }
             }
         }
 
-        // stage('App Verification 2') {
-        //     steps {
-        //         container('env') {
-        //             sh 'curl --fail http://flask-app:5000/health'
-        //         }
-        //     }
-        // }
-
-        // stage('App Verification 3') {
-        //     steps {
-        //         container('env') {
-        //             sh '''
-        //             kubectl get pods -n jenkins -l app.kubernetes.io/name=flask-app
-        //             kubectl logs -n jenkins -l app.kubernetes.io/name=flask-app --tail=30
-        //             NODE_PORT=$(kubectl get svc flask-app -n jenkins -o=jsonpath="{.spec.ports[0].nodePort}")
-        //             APP_URL="http://$(minikube ip):$NODE_PORT/health"
-        //             echo "⏳ Waiting for app at $APP_URL ..."
-        //             sleep 5
-        //             RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "$APP_URL")
-        //             if [ "$RESPONSE" -ne 200 ]; then
-        //             echo "❌ App verification failed. Status: $RESPONSE"
-        //             exit 1
-        //             fi
-        //             echo "✅ App is healthy"
-        //             '''
-        //         }
-        //     }
-        // }
     }
 
     post {
