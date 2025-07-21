@@ -65,15 +65,6 @@ spec:
             }
         }
 
-        // stage('SonarQube Analysis') {
-        //     steps {
-        //         echo '⏩ Security check with SonarQube'
-        //         withSonarQubeEnv('SonarQube') {
-        //             sh 'sonar-scanner -Dsonar.projectKey=flask-app -Dsonar.sources=flask-app'
-        //         }
-        //     }
-        // }
-
         stage('SonarQube Analysis') {
             steps {
                 echo '⏩ SonarQube analysis'
