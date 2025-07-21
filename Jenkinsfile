@@ -11,6 +11,13 @@ spec:
     command:
     - cat
     tty: true
+    volumeMounts:
+    - name: docker-sock
+        mountPath: /var/run/docker.sock
+  volumes:
+    - name: docker-sock
+      hostPath:
+        path: /var/run/docker.sock
 """
             defaultContainer 'env'
         }
@@ -62,7 +69,10 @@ spec:
             }
             steps {
                 container('env') {
-                    sh 'docker build -t ${DOCKER_IMAGE} flask-app'  
+                    sh '''
+                    docker version
+                    docker build -t ${DOCKER_IMAGE} flask-app'  
+                    '''
                 }
             }
         }
