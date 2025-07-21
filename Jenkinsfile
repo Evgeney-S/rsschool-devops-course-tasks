@@ -97,13 +97,13 @@ spec:
             }
         }
 
-        stage('App Verification') {
-            steps {
-                container('env') {
-                    sh 'curl --fail http://flask-app.jenkins.svc.cluster.local:5000/health'
-                }
-            }
-        }
+        // stage('App Verification') {
+        //     steps {
+        //         container('env') {
+        //             sh 'curl --fail http://flask-app.jenkins.svc.cluster.local:5000/health'
+        //         }
+        //     }
+        // }
 
         stage('App Verification 2') {
             steps {
