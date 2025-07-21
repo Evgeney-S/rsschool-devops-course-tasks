@@ -44,7 +44,7 @@ spec:
                 echo '⏩ Application build (installing dependencies)'
                 dir('flask-app') {
                     sh '''
-                        pip install -r requirements.txt'
+                        pip install -r requirements.txt
                         echo "✅ Application build completed successfully (dependencies installed)!"
                     '''
                 }
