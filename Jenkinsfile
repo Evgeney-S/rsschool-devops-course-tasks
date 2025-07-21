@@ -134,10 +134,13 @@ spec:
                     sh '''
                         # curl --fail http://flask-app.jenkins.svc.cluster.local:5000/health
                         # STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://flask-app.jenkins.svc.cluster.local:5000/health)
-                        RESPONSE=$(curl -s -w "___STATUS_CODE___%{http_code}" http://flask-app.jenkins.svc.cluster.local:5000/health)
+                        
+                        RESPONSE=$(curl -s -w "HTTPSTATUS:%{http_code}" http://flask-app.jenkins.svc.cluster.local:5000/health)
+                        BODY=$(echo "$RESPONSE" | sed -e 's/HTTPSTATUS\:.*//')
+                        STATUS=$(echo "$RESPONSE" | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
                         echo "Response: $RESPONSE"
-                        BODY=$(echo "$RESPONSE" | sed 's/___STATUS_CODE___.*//')
-                        STATUS=$(echo "$RESPONSE" | sed 's/.*___STATUS_CODE___//')
+                        echo "Status: $STATUS"
+                        echo "Body: $BODY"
                         if [ "$STATUS" -eq 200 ]; then
                             set +x
                             echo "✅ App Verification passed successfully!"
