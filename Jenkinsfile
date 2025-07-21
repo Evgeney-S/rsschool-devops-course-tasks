@@ -74,6 +74,25 @@ spec:
         //     }
         // }
 
+        stage('SonarQube Analysis') {
+            steps {
+                echo '⏩ SonarQube analysis'
+                container('env') {
+                    withSonarQubeEnv('sonarqube') {
+                        dir('flask-app') {
+                            sh '''
+                                sonar-scanner \
+                                -Dsonar.projectKey=flask-app \
+                                -Dsonar.sources=. \
+                                -Dsonar.host.url=$SONAR_HOST_URL \
+                                -Dsonar.login=$SONAR_AUTH_TOKEN
+                            '''
+                        }
+                    }
+                }
+            }
+        }
+
         stage('Docker Build') {
             when {
                 expression { return params.RUN_DOCKER_BUILD }
@@ -132,15 +151,12 @@ spec:
                 echo '⏩ Application verification'
                 container('env') {
                     sh '''
-                        # curl --fail http://flask-app.jenkins.svc.cluster.local:5000/health
-                        # STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://flask-app.jenkins.svc.cluster.local:5000/health)
-
                         RESPONSE=$(curl -s -w "HTTPSTATUS:%{http_code}" http://flask-app.jenkins.svc.cluster.local:5000/health)
                         BODY=$(echo "$RESPONSE" | sed -e 's/HTTPSTATUS:.*//')
                         STATUS=$(echo "$RESPONSE" | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
-                        echo "Response: $RESPONSE"
-                        echo "Status: $STATUS"
-                        echo "Body: $BODY"
+                        # echo "Response: $RESPONSE"
+                        # echo "Status: $STATUS"
+                        # echo "Body: $BODY"
                         if [ "$STATUS" -eq 200 ]; then
                             set +x
                             echo "✅ App Verification passed successfully!"
