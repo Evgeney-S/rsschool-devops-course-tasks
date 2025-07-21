@@ -45,6 +45,7 @@ spec:
                 dir('flask-app') {
                     sh '''
                         pip install -r requirements.txt
+                        set +x
                         echo "✅ Application build completed successfully (dependencies installed)!"
                     '''
                 }
@@ -57,6 +58,7 @@ spec:
                 dir('flask-app') {
                     sh '''
                         python -m unittest test_main.py
+                        set +x
                         echo "✅ Unit tests passed successfully!"
                     '''
                 }
@@ -80,8 +82,9 @@ spec:
                 echo '⏩ Docker image building'
                 container('env') {
                     sh '''
-                        // docker version
+                        # docker version
                         docker build -t ${DOCKER_IMAGE} flask-app
+                        set +x
                         echo "✅ Docker image built successfully!"
                     '''
                 }
@@ -99,6 +102,7 @@ spec:
                         sh '''
                             echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
                             docker push ${DOCKER_IMAGE}
+                            set +x
                             echo "✅ Docker image pushed successfully!"
                         '''
                     }
@@ -116,6 +120,7 @@ spec:
                             --create-namespace \
                             --set image.repository=evgeneys/flask-app \
                             --set image.tag=latest
+                        set +x
                         echo "✅ Deployment completed successfully!"
                     '''
                 }
@@ -127,18 +132,21 @@ spec:
                 echo '⏩ Application verification'
                 container('env') {
                     sh '''
-                        // curl --fail http://flask-app.jenkins.svc.cluster.local:5000/health
-                        // STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://flask-app.jenkins.svc.cluster.local:5000/health)
+                        # curl --fail http://flask-app.jenkins.svc.cluster.local:5000/health
+                        # STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://flask-app.jenkins.svc.cluster.local:5000/health)
                         RESPONSE=$(curl -s -w "___STATUS_CODE___%{http_code}" http://flask-app.jenkins.svc.cluster.local:5000/health)
                         echo "Response: $RESPONSE"
                         BODY=$(echo "$RESPONSE" | sed 's/___STATUS_CODE___.*//')
                         STATUS=$(echo "$RESPONSE" | sed 's/.*___STATUS_CODE___//')
                         if [ "$STATUS" -eq 200 ]; then
+                            set +x
                             echo "✅ App Verification passed successfully!"
                             echo "📦 App response:"
                             echo "$BODY"
                         else
+                            set +x
                             echo "❌ App Verification error. Status: $STATUS"
+                            set -x
                             kubectl get pods -n jenkins
                             exit 1
                         fi
