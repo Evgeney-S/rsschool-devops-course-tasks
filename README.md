@@ -64,12 +64,19 @@ mv linux-amd64/helm /usr/local/bin/helm
 helm version
 
 ```
-
+<!-- 
 * Install Kaniko
 Created manifest `kaniko-sa.yaml`
 Apply manifest:
 ```
 kubectl apply -f kaniko-sa.yaml
+``` -->
+
+* Service account for Jenkins 
+Manifest - `helm/jenkins/rbac-jenkins-admin.yaml`
+Apply:
+```
+kubectl apply -f rbac-jenkins-admin.yaml
 ```
 
 * Set port forwarding:
