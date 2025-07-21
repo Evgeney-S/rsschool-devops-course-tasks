@@ -6,14 +6,14 @@ apiVersion: v1
 kind: Pod
 spec:
   containers:
-  - name: env
-    image: evgeneys/flask-app-build-env:latest
-    command:
-    - cat
-    tty: true
-    volumeMounts:
-    - name: docker-sock
-        mountPath: /var/run/docker.sock
+    - name: env
+      image: evgeneys/flask-app-build-env:latest
+      command:
+      - cat
+      tty: true
+      volumeMounts:
+        - name: docker-sock
+          mountPath: /var/run/docker.sock
   volumes:
     - name: docker-sock
       hostPath:
@@ -70,8 +70,8 @@ spec:
             steps {
                 container('env') {
                     sh '''
-                    docker version
-                    docker build -t ${DOCKER_IMAGE} flask-app'  
+                        docker version
+                        docker build -t ${DOCKER_IMAGE} flask-app'  
                     '''
                 }
             }
