@@ -71,7 +71,7 @@ spec:
                 container('env') {
                     sh '''
                         docker version
-                        docker build -t ${DOCKER_IMAGE} flask-app'  
+                        docker build -t ${DOCKER_IMAGE} flask-app
                     '''
                 }
             }
