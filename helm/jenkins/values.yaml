@@ -1,0 +1,57 @@
+controller:
+  image:
+    repository: jenkins/jenkins
+    tag: lts
+    pullPolicy: Always
+
+
+  runAsUser: 0
+  runAsGroup: 0
+  fsGroup: 0
+  securityContext:
+    runAsUser: 0
+    runAsGroup: 0
+    fsGroup: 0
+  containerSecurityContext:
+    runAsUser: 0
+    runAsGroup: 0
+    readOnlyRootFilesystem: false
+    allowPrivilegeEscalation: true
+
+
+  admin:
+    user: admin
+    password: admin123
+    createSecret: true
+
+  service:
+    type: NodePort
+    port: 8080
+    nodePort: 32000
+
+  persistence:
+    enabled: true
+    size: 8Gi
+    storageClass: standard
+
+  jcasc:
+    enabled: true
+    config: |
+      jenkins:
+        securityRealm:
+          local:
+            allowsSignup: false
+            users:
+              - id: "admin"
+                password: "admin123"
+        authorizationStrategy:
+          loggedInUsersCanDoAnything:
+            allowAnonymousRead: false
+        jobs:
+          - script: >
+              freeStyleJob('hello-world') {
+                description('Hello World job created via JCasC')
+                steps {
+                  shell('echo "Hello world"')
+                }
+              }

@@ -14,3 +14,5 @@ terraform.log
 # Override files
 *.tfoverride
 *.tfoverride.json
+
+_temp/

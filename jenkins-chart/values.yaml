@@ -1,5 +1,24 @@
 jenkins:
   controller:
+    image:
+      registry: docker.io
+      repository: evgeneys/jenkins-with-tools
+      tag: latest
+      pullPolicy: Always
+      # pullPolicy: IfNotPresent
+    
+    initContainerEnv:
+      - name: DISABLE_INIT_CONTAINER
+        value: "true"
+
+    initContainers: []
+
+    sidecars:
+      configAutoReload:
+        enabled: false
+
+    imagePullPolicy: IfNotPresent
+
     JCasC:
       defaultConfig: true
       configScripts:

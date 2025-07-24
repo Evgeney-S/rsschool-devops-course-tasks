@@ -1,0 +1,10 @@
+service:
+  type: NodePort
+
+postgresql:
+  enabled: true
+
+monitoringPasscode: "some5132Passcode"
+
+community:
+  enabled: true
