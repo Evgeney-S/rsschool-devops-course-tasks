@@ -46,6 +46,32 @@ pipeline {
             }
         }
 
+        stage('Check SMTP credentials') {
+            steps {
+                sh '''
+                    error=0
+                    if [ -z "$GRAFANA_SMTP_USER" ]; then
+                        echo "❌ GRAFANA_SMTP_USER variable is empty!"
+                        error=1
+                    fi
+                    if [ -z "$GRAFANA_SMTP_PASS" ]; then
+                        echo "❌ GRAFANA_SMTP_PASS variable is empty!"
+                        error=1
+                    fi
+                    if [ -z "$GRAFANA_SMTP_FROM" ]; then
+                        echo "❌ GRAFANA_SMTP_FROM variable is empty!"
+                        error=1
+                    fi
+                    if [ $error -ne 0 ]; then
+                        echo "Please set the required environment variables in Jenkins credentials."
+                        exit 1
+                    else
+                        echo "✅ All required SMTP credentials are set."
+                    fi
+                '''
+            }
+        }
+
         stage('Install Grafana') {
             steps {
                 sh '''
