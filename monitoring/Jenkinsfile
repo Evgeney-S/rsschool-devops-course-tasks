@@ -1,7 +1,7 @@
 pipeline {
     agent {
         kubernetes {
-            yamlFile 'jenkins/monitoring-agent.yaml'
+            yamlFile 'monitoring/jenkins/monitoring-agent.yaml'
             defaultContainer 'helm'
         }
     }

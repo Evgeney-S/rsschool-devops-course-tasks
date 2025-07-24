@@ -16,7 +16,7 @@ This monitoring setup includes Prometheus and Grafana installed into a Kubernete
     - Docker image for Jenkins agent: `monitoring/jenkins/Dockerfile`
 
    ```bash
-   docker build -t evgeneys/helm-kubectl-agent:latest -f monitoring-agent.Dockerfile .
+   docker build -t evgeneys/helm-kubectl-agent:latest -f Dockerfile .
    docker push evgeneys/helm-kubectl-agent:latest
    ```
 
