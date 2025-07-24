@@ -81,9 +81,9 @@ pipeline {
                     helm upgrade --install grafana grafana/grafana \
                         -n $NAMESPACE \
                         -f monitoring/helm/grafana-values.yaml \
-                        --set smtp.user=$GRAFANA_SMTP_USER \
-                        --set smtp.password=$GRAFANA_SMTP_PASS \
-                        --set smtp.from=$GRAFANA_SMTP_FROM
+                        --set smtp.user='$GRAFANA_SMTP_USER' \
+                        --set smtp.password='$GRAFANA_SMTP_PASS' \
+                        --set smtp.from='$GRAFANA_SMTP_FROM'
                 '''
             }
         }
