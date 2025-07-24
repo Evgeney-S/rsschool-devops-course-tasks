@@ -7,7 +7,11 @@ pipeline {
     }
 
     environment {
-        NAMESPACE = "monitoring"
+        NAMESPACE           = "monitoring"
+        GRAFANA_SMTP_USER   = credentials('grafana-smtp-username')
+        GRAFANA_SMTP_PASS   = credentials('grafana-smtp-password')
+        GRAFANA_SMTP_FROM   = credentials('grafana-from-address')
+        GRAFANA_ALERT_EMAIL = credentials('grafana-to-address')
     }
 
     stages {
@@ -29,53 +33,51 @@ pipeline {
             }
         }
 
+        stage('Create Grafana admin secret') {
+            steps {
+                withCredentials([string(credentialsId: 'grafana-admin-password', variable: 'GRAFANA_PASSWORD')]) {
+                    sh '''
+                        kubectl create secret generic grafana-admin \
+                            --from-literal=admin-password="${GRAFANA_PASSWORD}" \
+                            -n $NAMESPACE \
+                            --dry-run=client -o yaml | kubectl apply -f -
+                    '''
+                }
+            }
+        }
+
         stage('Install Grafana') {
             steps {
-                container('helm') {
-                    withCredentials([string(credentialsId: 'grafana-admin-password', variable: 'GRAFANA_PASSWORD')]) {
-                        sh '''
-                            echo "Creating grafana-admin Kubernetes secret from Jenkins credentials..."
+                sh '''
+                    helm repo add grafana https://grafana.github.io/helm-charts
+                    helm repo update
 
-                            kubectl create secret generic grafana-admin \
-                                --from-literal=admin-password="${GRAFANA_PASSWORD}" \
-                                -n monitoring \
-                                --dry-run=client -o yaml | kubectl apply -f -
-
-                            echo "Installing Grafana via Helm..."
-
-                            helm upgrade --install grafana grafana/grafana \
-                                -n monitoring \
-                                -f monitoring/helm/grafana-values.yaml \
-                                --set admin.existingSecret=grafana-admin \
-                                --set admin.user=admin
-
-                            echo "Waiting for Grafana pod to be ready..."
-                            kubectl rollout status deployment grafana -n monitoring --timeout=120s
-
-                            echo "Grafana installed successfully."
-                        '''
-                    }
-                }
+                    helm upgrade --install grafana grafana/grafana \
+                        -n $NAMESPACE \
+                        -f monitoring/helm/grafana-values.yaml \
+                        --set smtp.user=$GRAFANA_SMTP_USER \
+                        --set smtp.password=$GRAFANA_SMTP_PASS \
+                        --set smtp.from=$GRAFANA_SMTP_FROM
+                '''
             }
         }
 
         stage('Apply Grafana configmaps') {
             steps {
-                container('helm') {
-                    sh '''
-                        echo "Applying Grafana alert rules configmap..."
-                        kubectl create configmap grafana-alerts \
-                            --from-file=monitoring/alerts/cpu-ram-alerts.yaml \
-                            -n $NAMESPACE \
-                            --dry-run=client -o yaml | kubectl apply -f -
+                sh '''
+                    echo "$GRAFANA_ALERT_EMAIL" > /tmp/alert-email.txt
 
-                        echo "Applying Grafana contact points configmap..."
-                        kubectl create configmap grafana-contact \
-                            --from-file=monitoring/notifiers/smtp-contact.yaml \
-                            -n $NAMESPACE \
-                            --dry-run=client -o yaml | kubectl apply -f -
-                    '''
-                }
+                    kubectl create configmap grafana-contact \
+                        --from-file=monitoring/notifiers/smtp-contact.yaml \
+                        --from-file=email.txt=/tmp/alert-email.txt \
+                        -n $NAMESPACE \
+                        --dry-run=client -o yaml | kubectl apply -f -
+
+                    kubectl create configmap grafana-alerts \
+                        --from-file=monitoring/alerts/cpu-ram-alerts.yaml \
+                        -n $NAMESPACE \
+                        --dry-run=client -o yaml | kubectl apply -f -
+                '''
             }
         }
 

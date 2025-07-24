@@ -6,4 +6,4 @@ contactPoints:
       - uid: "email1"
         type: "email"
         settings:
-          addresses: "your-email@example.com"
+          addresses: "__EMAIL_PLACEHOLDER__"
