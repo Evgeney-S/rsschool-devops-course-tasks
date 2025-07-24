@@ -1,0 +1,65 @@
+admin:
+  existingSecret: grafana-admin
+
+service:
+  type: NodePort
+  port: 3000
+
+persistence:
+  enabled: true
+  size: 2Gi
+
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        access: proxy
+        url: http://prometheus-server.monitoring.svc.cluster.local
+        isDefault: true
+
+dashboardProviders:
+  dashboardproviders.yaml:
+    apiVersion: 1
+    providers:
+      - name: 'default'
+        orgId: 1
+        folder: ''
+        type: file
+        options:
+          path: /var/lib/grafana/dashboards
+
+dashboards:
+  default:
+    cluster-overview:
+      file: /var/lib/grafana/dashboards/cluster-overview.json
+
+env:
+  GF_SMTP_ENABLED: true
+  GF_SMTP_HOST: smtp.mailtrap.io:2525
+  GF_SMTP_SKIP_VERIFY: true
+  GF_SMTP_FROM_ADDRESS: grafana@example.com
+  GF_SMTP_FROM_NAME: Grafana
+  GF_ALERTING_ENABLED: true
+  GF_ALERTING_CONTACTPOINTS_FILE: /etc/grafana/notifiers/smtp-contact.yaml
+  GF_ALERTING_RULES_FILE: /etc/grafana/alerts/cpu-ram-alerts.yaml
+
+extraVolumeMounts:
+  - name: dashboards
+    mountPath: /var/lib/grafana/dashboards
+  - name: notifiers
+    mountPath: /etc/grafana/notifiers
+  - name: alerts
+    mountPath: /etc/grafana/alerts
+
+extraVolumes:
+  - name: dashboards
+    configMap:
+      name: grafana-dashboard
+  - name: notifiers
+    configMap:
+      name: grafana-contact
+  - name: alerts
+    configMap:
+      name: grafana-alerts
