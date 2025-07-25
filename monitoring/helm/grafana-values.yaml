@@ -2,7 +2,7 @@ admin:
   existingSecret: grafana-admin
   userKey: admin-user
   passwordKey: admin-password
-  
+
 service:
   type: NodePort
   port: 3000
@@ -10,6 +10,9 @@ service:
 persistence:
   enabled: true
   size: 2Gi
+  storageClassName: standard
+  accessModes:
+    - ReadWriteOnce
 
 initChownData:
   enabled: false
