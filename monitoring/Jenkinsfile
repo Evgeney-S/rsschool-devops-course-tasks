@@ -17,7 +17,7 @@ pipeline {
     stages {
         stage('Create namespace') {
             steps {
-                sh 'kubectl create ns $NAMESPACE --dry-run=client -o yaml | kubectl apply -f -'
+                sh 'kubectl create ns $NAMESPACE --dry-run=client -o yaml | kubectl apply --validate=false -f -'
             }
         }
 
