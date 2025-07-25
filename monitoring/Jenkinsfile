@@ -40,8 +40,8 @@ pipeline {
                 ]) {
                     sh '''
                         kubectl create secret generic grafana-admin \
-                            --from-literal=admin-user='${GRAFANA_USER}' \
-                            --from-literal=admin-password='${GRAFANA_PASS}' \
+                            --from-literal=admin-user="${GRAFANA_USER}" \
+                            --from-literal=admin-password="${GRAFANA_PASS}" \
                             -n $NAMESPACE \
                             --dry-run=client -o yaml | kubectl apply -f -
                     '''
