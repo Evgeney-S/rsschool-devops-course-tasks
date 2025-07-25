@@ -35,10 +35,13 @@ pipeline {
 
         stage('Create Grafana admin secret') {
             steps {
-                withCredentials([string(credentialsId: 'grafana-admin-password', variable: 'GRAFANA_PASSWORD')]) {
+                withCredentials([
+                    usernamePassword(credentialsId: 'grafana-admin-creds', usernameVariable: 'GRAFANA_USER', passwordVariable: 'GRAFANA_PASS')
+                ]) {
                     sh '''
                         kubectl create secret generic grafana-admin \
-                            --from-literal=admin-password="${GRAFANA_PASSWORD}" \
+                            --from-literal=admin-user='${GRAFANA_USER}' \
+                            --from-literal=admin-password='${GRAFANA_PASSWORD}' \
                             -n $NAMESPACE \
                             --dry-run=client -o yaml | kubectl apply -f -
                     '''
