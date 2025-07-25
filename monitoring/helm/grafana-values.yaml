@@ -11,7 +11,7 @@ persistence:
 
 initChownData:
   enabled: false
-  
+
 datasources:
   datasources.yaml:
     apiVersion: 1
@@ -26,11 +26,12 @@ env:
   GF_SMTP_ENABLED: true
   GF_SMTP_HOST: smtp.gmail.com:587
   GF_SMTP_STARTTLS: true
+  # These will be filled by Helm via --set from Jenkins
   GF_SMTP_USER: "{{ .Values.smtp.user }}"
   GF_SMTP_PASSWORD: "{{ .Values.smtp.password }}"
-  GF_SMTP_SKIP_VERIFY: true
   GF_SMTP_FROM_ADDRESS: "{{ .Values.smtp.from }}"
   GF_SMTP_FROM_NAME: "Grafana Notifier"
+  GF_SMTP_SKIP_VERIFY: true
   GF_ALERTING_ENABLED: true
   GF_ALERTING_CONTACTPOINTS_FILE: /etc/grafana/notifiers/smtp-contact.yaml
   GF_ALERTING_RULES_FILE: /etc/grafana/alerts/cpu-ram-alerts.yaml
