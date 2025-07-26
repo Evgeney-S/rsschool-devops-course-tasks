@@ -40,6 +40,7 @@ env:
   GF_ALERTING_ENABLED: true
   GF_FEATURE_TOGGLES: "alerting"
   GF_ALERTING_PROVISIONING_ENABLED: true
+  GF_PROVISIONING_ALLOW_LOADING_INVALID_ALERTS: true
   GF_ALERTING_CONFIG_FILE: ""
   GF_ALERTING_CONTACTPOINTS_FILE: /etc/grafana/provisioning/notifiers/smtp-contact.yaml
   GF_ALERTING_RULES_FILE: /etc/grafana/provisioning/alerting/cpu-ram-alerts.yaml
