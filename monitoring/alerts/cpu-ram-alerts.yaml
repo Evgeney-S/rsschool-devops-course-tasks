@@ -4,22 +4,48 @@ groups:
     folder: General
     interval: 1m
     rules:
-      - alert: HighCpuUsage
-        title: "High CPU usage"
-        expr: sum(rate(container_cpu_usage_seconds_total{image!=""}[2m])) by (node) > 0.75
+      - uid: high-cpu-usage
+        title: High CPU usage
+        condition: A
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 120
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: sum(rate(container_cpu_usage_seconds_total{image!=""}[2m])) by (node) > 0.75
+              format: time_series
+              interval: ""
+              intervalFactor: 2
+              legendFormat: "{{ node }}"
+              refId: A
         for: 1m
-        labels:
-          severity: warning
         annotations:
           summary: "High CPU usage on {{ $labels.node }}"
           description: "CPU usage is above 75% for more than 1m"
-
-      - alert: LowMemoryAvailable
-        title: "Low memory available"
-        expr: (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) < 0.25
-        for: 1m
         labels:
           severity: warning
+
+      - uid: low-mem-available
+        title: Low available memory
+        condition: A
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 120
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) < 0.25
+              format: time_series
+              interval: ""
+              intervalFactor: 2
+              legendFormat: "{{ node }}"
+              refId: A
+        for: 1m
         annotations:
           summary: "Low available memory on {{ $labels.node }}"
           description: "Less than 25% RAM is available"
+        labels:
+          severity: warning
