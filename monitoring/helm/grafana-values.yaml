@@ -22,6 +22,7 @@ datasources:
     apiVersion: 1
     datasources:
       - name: Prometheus
+        uid: prometheus
         type: prometheus
         access: proxy
         url: http://prometheus-server.monitoring.svc.cluster.local
@@ -37,6 +38,7 @@ env:
   GF_SMTP_FROM_ADDRESS: "{{ .Values.smtp.from }}"
   GF_SMTP_FROM_NAME: "Grafana Notifier"
   GF_ALERTING_ENABLED: true
+  GF_FEATURE_TOGGLES: "alerting"
   GF_ALERTING_PROVISIONING_ENABLED: true
   GF_ALERTING_CONFIG_FILE: ""
   GF_ALERTING_CONTACTPOINTS_FILE: /etc/grafana/provisioning/notifiers/smtp-contact.yaml
