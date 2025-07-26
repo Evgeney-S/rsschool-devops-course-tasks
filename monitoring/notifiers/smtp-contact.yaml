@@ -2,10 +2,8 @@ apiVersion: 1
 contactPoints:
   - orgId: 1
     name: "email-contact"
-    settings:
-      addresses: ${__file{/etc/grafana/provisioning/custom/email.txt}}
     receivers:
       - uid: "email1"
         type: "email"
         settings:
-          addresses: "__EMAIL_PLACEHOLDER__"
+          addresses: ${__file{/etc/grafana/provisioning/custom/email.txt}}
