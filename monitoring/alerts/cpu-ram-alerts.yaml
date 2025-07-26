@@ -12,7 +12,7 @@ groups:
             relativeTimeRange:
               from: 120
               to: 0
-            datasourceUid: prometheus
+            datasourceUid: Prometheus
             model:
               expr: sum(rate(container_cpu_usage_seconds_total{image!=""}[2m])) by (node) > 0.75
               format: time_series
@@ -35,7 +35,7 @@ groups:
             relativeTimeRange:
               from: 120
               to: 0
-            datasourceUid: prometheus
+            datasourceUid: Prometheus
             model:
               expr: (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) < 0.25
               format: time_series
