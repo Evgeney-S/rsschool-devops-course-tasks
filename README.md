@@ -53,8 +53,15 @@ kubectl port-forward svc/grafana 3000:3000 -n monitoring
 ## To simulate alerts
 
 ```
-kubectl run -i --tty load-generator --rm --image=alpine -- sh
-apk add stress
-stress --cpu 2 --timeout 60
+# CPU
+kubectl -n monitoring run cpu-stress --image=ubuntu --restart=Never -- bash -c "apt-get update && apt-get install -y stress && stress --cpu 2"
+
+# Memory
+kubectl -n monitoring run mem-stress --image=ubuntu --restart=Never -- bash -c "apt-get update && apt-get install -y stress && stress --vm 4 --vm-bytes 512M"
 ```
 
+* Remove test pods
+```
+kubectl delete pod cpu-stress -n monitoring
+kubectl delete pod mem-stress -n monitoring
+```
