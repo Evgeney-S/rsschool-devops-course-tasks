@@ -6,4 +6,5 @@ contactPoints:
       - uid: "admin-email1"
         type: "email"
         settings:
-          addresses: "${__file{/etc/grafana/provisioning/custom/email.txt}}"
+          # addresses: "${__file{/etc/grafana/provisioning/custom/email.txt}}"
+          addresses: my.test@gmail.com
