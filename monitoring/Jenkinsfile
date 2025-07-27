@@ -75,6 +75,16 @@ pipeline {
         //     }
         // }
 
+        stage('Install Grafana provisioning') {
+            steps {
+                sh '''
+                    helm upgrade --install grafana-provisioning ./monitoring/helm/grafana-provisioning \
+                        -n $NAMESPACE \
+                        --set contact.to="$GRAFANA_ALERT_EMAIL"
+                '''
+            }
+        }
+
         stage('Install Grafana') {
             steps {
                 sh '''
@@ -86,8 +96,7 @@ pipeline {
                         -f monitoring/helm/grafana-values.yaml \
                         --set-string smtp.user="$GRAFANA_SMTP_USER" \
                         --set-string smtp.password="$GRAFANA_SMTP_PASS" \
-                        --set-string smtp.from="$GRAFANA_SMTP_FROM" \
-                        --set smtp.to="$GRAFANA_ALERT_EMAIL"
+                        --set-string smtp.from="$GRAFANA_SMTP_FROM"
                 '''
             }
         }

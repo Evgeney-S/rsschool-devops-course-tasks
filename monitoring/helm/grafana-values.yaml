@@ -50,11 +50,6 @@ smtp:
   user: ""
   password: ""
   from: ""
-  to: ""
-
-alerts:
-  cpuThreshold: 0.75
-  memThreshold: 0.25
 
 extraVolumeMounts:
   - name: alerts

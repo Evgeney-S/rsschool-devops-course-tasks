@@ -1,0 +1,6 @@
+alerts:
+  cpuThreshold: 0.75
+  memThreshold: 0.25
+
+contact:
+  to: "" # This will be set in the Jenkins

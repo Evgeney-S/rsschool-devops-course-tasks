@@ -1,0 +1,4 @@
+apiVersion: v2
+name: grafana-provisioning
+description: Provisioning files for Grafana (alerts, contact points, policies)
+version: 0.1.0

@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: grafana-alerts
 data:
-  cpu-ram-alerts.yaml: |-
+  alerts.yaml: |-
     apiVersion: 1
     groups:
       - name: resource-alerts
