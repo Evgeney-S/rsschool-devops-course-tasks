@@ -97,7 +97,7 @@ pipeline {
                     echo "$GRAFANA_ALERT_EMAIL" > /tmp/alert-email.txt
 
                     kubectl create configmap grafana-contact \
-                        --from-file=monitoring/notifiers/smtp-contact.yaml \
+                        --from-file=contact-points.yaml=monitoring/alerts/contact-points.yaml \
                         --from-file=email.txt=/tmp/alert-email.txt \
                         -n $NAMESPACE \
                         --dry-run=client -o yaml | kubectl apply -f -
