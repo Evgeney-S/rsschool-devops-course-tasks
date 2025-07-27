@@ -38,7 +38,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "prometheus-server"
       },
       "description": "CPU usage (All cluster)",
       "fieldConfig": {
@@ -107,7 +107,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "prometheus-server"
       },
       "fieldConfig": {
         "defaults": {
@@ -219,7 +219,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "prometheus-server"
       },
       "fieldConfig": {
         "defaults": {
@@ -285,7 +285,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "prometheus-server"
       },
       "fieldConfig": {
         "defaults": {
@@ -405,7 +405,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "prometheus-server"
       },
       "description": "Memory usage (GB)",
       "fieldConfig": {
@@ -498,7 +498,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "prometheus-server"
       },
       "fieldConfig": {
         "defaults": {
@@ -564,7 +564,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "prometheus-server"
       },
       "description": "Disk usage",
       "fieldConfig": {
@@ -661,7 +661,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "prometheus-server"
       },
       "description": "Disk usage (GB)",
       "fieldConfig": {
