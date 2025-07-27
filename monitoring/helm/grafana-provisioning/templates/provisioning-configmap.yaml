@@ -1,7 +1,12 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: grafana-alerts
+  name: grafana-provisioning
+  labels:
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/component: provisioning
+    app.kubernetes.io/part-of: monitoring
+    managed-by: Helm
 data:
   alerts.yaml: |-
     apiVersion: 1
@@ -55,3 +60,21 @@ data:
               description: "Less than {{ mul .Values.alerts.memThreshold 100 | default 25 }}% RAM is available"
             labels:
               severity: warning
+  contact-points.yaml: |-
+    apiVersion: 1
+    contactPoints:
+      - orgId: 1
+        name: "admin-email-contact"
+        receivers:
+          - uid: "admin-email1"
+            type: "email"
+            settings:
+              addresses: {{ .Values.contact.to | quote }}
+  policies.yaml: |-
+    apiVersion: 1
+    policies:
+      - orgId: 1
+        receiver: "admin-email-contact"
+        group_by: ['alertname']
+        matchers: []
+        continue: false
