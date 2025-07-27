@@ -29,11 +29,13 @@ data:
                   format: time_series
                   interval: ""
                   intervalFactor: 2
-                  legendFormat: "{{`{{ node }}`}}"
+                  # legendFormat: "{{`{{ node }}`}}"
+                  legendFormat: "High CPU usage"
                   refId: A
             for: 1m
             annotations:
-              summary: "High CPU usage on {{`{{ $labels.node }}`}}"
+              # summary: "High CPU usage on {{`{{ $labels.node }}`}}"
+              summary: "High CPU usage"
               description: "CPU usage is above {{ mul .Values.alerts.cpuThreshold 100 | default 75 }}% for more than 1m"
             labels:
               severity: warning
@@ -52,11 +54,13 @@ data:
                   format: time_series
                   interval: ""
                   intervalFactor: 2
-                  legendFormat: "{{`{{ node }}`}}"
+                  # legendFormat: "{{`{{ node }}`}}"
+                  legendFormat: "Low available memory"
                   refId: A
             for: 1m
             annotations:
-              summary: "Low available memory on {{`{{ $labels.node }}`}}"
+              # summary: "Low available memory on {{`{{ $labels.node }}`}}"
+              summary: "Low available memory"
               description: "Less than {{ mul .Values.alerts.memThreshold 100 | default 25 }}% RAM is available"
             labels:
               severity: warning
