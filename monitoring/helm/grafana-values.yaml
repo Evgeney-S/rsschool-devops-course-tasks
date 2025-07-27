@@ -42,9 +42,9 @@ env:
   GF_ALERTING_PROVISIONING_ENABLED: true
   GF_PROVISIONING_ALLOW_LOADING_INVALID_ALERTS: true
   GF_ALERTING_CONFIG_FILE: ""
-  GF_ALERTING_RULES_FILE: /etc/grafana/provisioning/alerting/alerts.yaml
-  GF_ALERTING_CONTACTPOINTS_FILE: /etc/grafana/provisioning/alerting/contact-points.yaml
-  GF_ALERTING_POLICIES_FILE: /etc/grafana/provisioning/alerting/policies.yaml
+  GF_ALERTING_RULES_FILE: /etc/grafana/provisioning/alerting/alerts/alerts.yaml
+  GF_ALERTING_CONTACTPOINTS_FILE: /etc/grafana/provisioning/alerting/contact/contact-points.yaml
+  GF_ALERTING_POLICIES_FILE: /etc/grafana/provisioning/alerting/policies/policies.yaml
 
 smtp:
   user: ""
@@ -58,11 +58,11 @@ alerts:
 
 extraVolumeMounts:
   - name: alerts
-    mountPath: /etc/grafana/provisioning/alerting
+    mountPath: /etc/grafana/provisioning/alerting/alerts
   - name: contact
-    mountPath: /etc/grafana/provisioning/alerting
+    mountPath: /etc/grafana/provisioning/alerting/contact
   - name: policies
-    mountPath: /etc/grafana/provisioning/alerting
+    mountPath: /etc/grafana/provisioning/alerting/policies
 
 extraVolumes:
   - name: alerts
