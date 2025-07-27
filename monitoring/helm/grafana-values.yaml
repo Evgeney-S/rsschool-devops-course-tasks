@@ -42,24 +42,35 @@ env:
   GF_ALERTING_PROVISIONING_ENABLED: true
   GF_PROVISIONING_ALLOW_LOADING_INVALID_ALERTS: true
   GF_ALERTING_CONFIG_FILE: ""
+  GF_ALERTING_RULES_FILE: /etc/grafana/provisioning/alerting/alerts.yaml
   GF_ALERTING_CONTACTPOINTS_FILE: /etc/grafana/provisioning/alerting/contact-points.yaml
-  GF_ALERTING_RULES_FILE: /etc/grafana/provisioning/alerting/cpu-ram-alerts.yaml
+  GF_ALERTING_POLICIES_FILE: /etc/grafana/provisioning/alerting/policies.yaml
 
 smtp:
   user: ""
   password: ""
   from: ""
+  to: ""
+
+alerts:
+  cpuThreshold: 0.75
+  memThreshold: 0.25
 
 extraVolumeMounts:
   - name: alerts
     mountPath: /etc/grafana/provisioning/alerting
-  - name: email-file
-    mountPath: /etc/grafana/provisioning/custom
+  - name: contact
+    mountPath: /etc/grafana/provisioning/alerting
+  - name: policies
+    mountPath: /etc/grafana/provisioning/alerting
 
 extraVolumes:
   - name: alerts
     configMap:
-      name: grafana-contact
-  - name: email-file
+      name: grafana-alerts
+  - name: contact
     configMap:
       name: grafana-contact
+  - name: policies
+    configMap:
+      name: grafana-policies

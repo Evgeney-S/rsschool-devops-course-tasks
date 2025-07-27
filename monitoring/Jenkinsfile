@@ -49,31 +49,31 @@ pipeline {
             }
         }
 
-        stage('Check SMTP credentials') {
-            steps {
-                sh '''
-                    error=0
-                    if [ -z "$GRAFANA_SMTP_USER" ]; then
-                        echo "❌ GRAFANA_SMTP_USER variable is empty!"
-                        error=1
-                    fi
-                    if [ -z "$GRAFANA_SMTP_PASS" ]; then
-                        echo "❌ GRAFANA_SMTP_PASS variable is empty!"
-                        error=1
-                    fi
-                    if [ -z "$GRAFANA_SMTP_FROM" ]; then
-                        echo "❌ GRAFANA_SMTP_FROM variable is empty!"
-                        error=1
-                    fi
-                    if [ $error -ne 0 ]; then
-                        echo "Please set the required environment variables in Jenkins credentials."
-                        exit 1
-                    else
-                        echo "✅ All required SMTP credentials are set."
-                    fi
-                '''
-            }
-        }
+        // stage('Check SMTP credentials') {
+        //     steps {
+        //         sh '''
+        //             error=0
+        //             if [ -z "$GRAFANA_SMTP_USER" ]; then
+        //                 echo "❌ GRAFANA_SMTP_USER variable is empty!"
+        //                 error=1
+        //             fi
+        //             if [ -z "$GRAFANA_SMTP_PASS" ]; then
+        //                 echo "❌ GRAFANA_SMTP_PASS variable is empty!"
+        //                 error=1
+        //             fi
+        //             if [ -z "$GRAFANA_SMTP_FROM" ]; then
+        //                 echo "❌ GRAFANA_SMTP_FROM variable is empty!"
+        //                 error=1
+        //             fi
+        //             if [ $error -ne 0 ]; then
+        //                 echo "Please set the required environment variables in Jenkins credentials."
+        //                 exit 1
+        //             else
+        //                 echo "✅ All required SMTP credentials are set."
+        //             fi
+        //         '''
+        //     }
+        // }
 
         stage('Install Grafana') {
             steps {
@@ -86,29 +86,30 @@ pipeline {
                         -f monitoring/helm/grafana-values.yaml \
                         --set-string smtp.user="$GRAFANA_SMTP_USER" \
                         --set-string smtp.password="$GRAFANA_SMTP_PASS" \
-                        --set-string smtp.from="$GRAFANA_SMTP_FROM"
+                        --set-string smtp.from="$GRAFANA_SMTP_FROM" \
+                        --set smtp.to="$GRAFANA_ALERT_EMAIL"
                 '''
             }
         }
 
-        stage('Apply Grafana configmaps') {
-            steps {
-                sh '''
-                    echo "$GRAFANA_ALERT_EMAIL" > /tmp/alert-email.txt
+        // stage('Apply Grafana configmaps') {
+        //     steps {
+        //         sh '''
+        //             echo "$GRAFANA_ALERT_EMAIL" > /tmp/alert-email.txt
 
-                    kubectl create configmap grafana-contact \
-                        --from-file=contact-points.yaml=monitoring/alerts/contact-points.yaml \
-                        --from-file=email.txt=/tmp/alert-email.txt \
-                        -n $NAMESPACE \
-                        --dry-run=client -o yaml | kubectl apply -f -
+        //             kubectl create configmap grafana-contact \
+        //                 --from-file=contact-points.yaml=monitoring/alerts/contact-points.yaml \
+        //                 --from-file=email.txt=/tmp/alert-email.txt \
+        //                 -n $NAMESPACE \
+        //                 --dry-run=client -o yaml | kubectl apply -f -
 
-                    kubectl create configmap grafana-alerts \
-                        --from-file=monitoring/alerts/cpu-ram-alerts.yaml \
-                        -n $NAMESPACE \
-                        --dry-run=client -o yaml | kubectl apply -f -
-                '''
-            }
-        }
+        //             kubectl create configmap grafana-alerts \
+        //                 --from-file=monitoring/alerts/cpu-ram-alerts.yaml \
+        //                 -n $NAMESPACE \
+        //                 --dry-run=client -o yaml | kubectl apply -f -
+        //         '''
+        //     }
+        // }
 
         stage('Output Access Info') {
             steps {

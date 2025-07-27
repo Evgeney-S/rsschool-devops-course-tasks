@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-alerts
+data:
+  cpu-ram-alerts.yaml: |-
+    apiVersion: 1
+    groups:
+      - name: resource-alerts
+        folder: Cluster Alerts
+        interval: 1m
+        rules:
+          - uid: high-cpu-usage
+            title: High CPU usage
+            condition: A
+            data:
+              - refId: A
+                relativeTimeRange:
+                  from: 120
+                  to: 0
+                datasourceUid: prometheus-server
+                model:
+                  expr: sum(rate(container_cpu_usage_seconds_total{image!=""}[2m])) by (node) > {{ .Values.alerts.cpuThreshold | default 0.75 }}
+                  format: time_series
+                  interval: ""
+                  intervalFactor: 2
+                  legendFormat: "{{ node }}"
+                  refId: A
+            for: 1m
+            annotations:
+              summary: "High CPU usage on {{ $labels.node }}"
+              description: "CPU usage is above {{ mul .Values.alerts.cpuThreshold 100 | default 75 }}% for more than 1m"
+            labels:
+              severity: warning
+
+          - uid: low-mem-available
+            title: Low available memory
+            condition: A
+            data:
+              - refId: A
+                relativeTimeRange:
+                  from: 120
+                  to: 0
+                datasourceUid: prometheus-server
+                model:
+                  expr: (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) < {{ .Values.alerts.memThreshold | default 0.25 }}
+                  format: time_series
+                  interval: ""
+                  intervalFactor: 2
+                  legendFormat: "{{ node }}"
+                  refId: A
+            for: 1m
+            annotations:
+              summary: "Low available memory on {{ $labels.node }}"
+              description: "Less than {{ mul .Values.alerts.memThreshold 100 | default 25 }}% RAM is available"
+            labels:
+              severity: warning

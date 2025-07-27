@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-policies
+data:
+  policies.yaml: |-
+    apiVersion: 1
+    policies:
+      - orgId: 1
+        receiver: "admin-email-contact"
+        group_by: ['alertname']
+        matchers: []
+        continue: false
