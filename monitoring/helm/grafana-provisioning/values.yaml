@@ -1,6 +1,8 @@
 alerts:
-  cpuThreshold: 0.5
-  memThreshold: 0.44
+  cpuThresholdAbs: 0.5
+  cpuThresholdPerc: 50
+  memThresholdAbs: 0.44
+  memThresholdPerc: 44
 
 datasource:
   uid: prometheus-server

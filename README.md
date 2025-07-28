@@ -8,6 +8,10 @@ This monitoring setup includes Prometheus and Grafana installed into a Kubernete
 - Docker Desktop
 - Minikube running in Docker container
 - Jenkins installed via Helm
+```
+# jenkins port-forward
+kubectl --namespace jenkins port-forward svc/jenkins 8080:8080
+```
 
 ## Deployment Steps
 
@@ -21,12 +25,13 @@ This monitoring setup includes Prometheus and Grafana installed into a Kubernete
    ```
 
 2. Create all YAML files in Git repository: 
-    - monitoring/jenkins/monitoring-agent.yaml
-    - monitoring/helm/prometheus-values.yaml
-    - monitoring/helm/grafana-values.yaml
-    - monitoring/helm/grafana-admin-secret.yaml
-    - monitoring/alerts/cpu-ram-alerts.yaml
-    - monitoring/notifiers/smtp-contact.yaml
+    - `monitoring/jenkins/monitoring-agent.yaml`
+    - `monitoring/helm/prometheus-values.yaml`
+    - `monitoring/helm/grafana-values.yaml`
+    - `monitoring/helm/grafana-provisioning` - separate Helm chart to create config maps for provisioning alerts, contact point and policies
+    - `monitoring/helm/grafana-provisioning/teplates/provisioning-configmap.yaml`
+    - `monitoring/helm/grafana-provisioning/chart.yaml`
+    - `monitoring/helm/grafana-provisioning/values.yaml`
 
 3. Create pipeline in Jenkins using `monitoring/Jenkinsfile`
 4. Run pipeline in Jenkins
