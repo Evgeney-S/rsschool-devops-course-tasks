@@ -1,0 +1,61 @@
+admin:
+  existingSecret: grafana-admin
+  userKey: admin-user
+  passwordKey: admin-password
+
+service:
+  type: NodePort
+  port: 3000
+
+persistence:
+  enabled: true
+  size: 2Gi
+  storageClassName: standard
+  accessModes:
+    - ReadWriteOnce
+
+initChownData:
+  enabled: false
+
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        uid: prometheus-server
+        type: prometheus
+        access: proxy
+        url: http://prometheus-server.monitoring.svc.cluster.local
+        isDefault: true
+
+env:
+  GF_SMTP_ENABLED: true
+  GF_SMTP_HOST: smtp.gmail.com:587
+  GF_SMTP_STARTTLS_ENABLE: true
+  GF_SMTP_SKIP_VERIFY: true
+  GF_SMTP_USER: "{{ .Values.smtp.user }}"
+  GF_SMTP_PASSWORD: "{{ .Values.smtp.password }}"
+  GF_SMTP_FROM_ADDRESS: "{{ .Values.smtp.from }}"
+  GF_SMTP_FROM_NAME: "Grafana Notifier"
+  GF_ALERTING_ENABLED: true
+  GF_FEATURE_TOGGLES: "alerting"
+  GF_ALERTING_PROVISIONING_ENABLED: true
+  GF_PROVISIONING_ALLOW_LOADING_INVALID_ALERTS: true
+  GF_ALERTING_CONFIG_FILE: ""
+  GF_ALERTING_RULES_FILE: /etc/grafana/provisioning/alerting/alerts.yaml
+  GF_ALERTING_CONTACTPOINTS_FILE: /etc/grafana/provisioning/alerting/contact-points.yaml
+  GF_ALERTING_POLICIES_FILE: /etc/grafana/provisioning/alerting/policies.yaml
+
+smtp:
+  user: ""
+  password: ""
+  from: ""
+
+extraVolumeMounts:
+  - name: provisioning
+    mountPath: /etc/grafana/provisioning/alerting
+
+extraVolumes:
+  - name: provisioning
+    configMap:
+      name: grafana-provisioning

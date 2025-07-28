@@ -1,0 +1,89 @@
+pipeline {
+    agent {
+        kubernetes {
+            yamlFile 'monitoring/jenkins/monitoring-agent.yaml'
+            defaultContainer 'helm'
+        }
+    }
+
+    environment {
+        NAMESPACE           = "monitoring"
+        GRAFANA_SMTP_USER   = credentials('grafana-smtp-username')
+        GRAFANA_SMTP_PASS   = credentials('grafana-smtp-password')
+        GRAFANA_SMTP_FROM   = credentials('grafana-from-address')
+        GRAFANA_ALERT_EMAIL = credentials('grafana-to-address')
+    }
+
+    stages {
+        stage('Create namespace') {
+            steps {
+                sh 'kubectl create ns $NAMESPACE --dry-run=client -o yaml | kubectl apply --validate=false -f -'
+            }
+        }
+
+        stage('Install Prometheus') {
+            steps {
+                sh '''
+                    helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+                    helm repo update
+                    helm upgrade --install prometheus prometheus-community/prometheus \
+                        -n $NAMESPACE \
+                        -f monitoring/helm/prometheus-values.yaml
+                '''
+            }
+        }
+
+        stage('Create Grafana admin secret') {
+            steps {
+                withCredentials([
+                    usernamePassword(credentialsId: 'grafana-admin-creds', usernameVariable: 'GRAFANA_USER', passwordVariable: 'GRAFANA_PASS')
+                ]) {
+                    sh '''
+                        kubectl create secret generic grafana-admin \
+                            --from-literal=admin-user="${GRAFANA_USER}" \
+                            --from-literal=admin-password="${GRAFANA_PASS}" \
+                            -n $NAMESPACE \
+                            --dry-run=client -o yaml | kubectl apply -f -
+                    '''
+                }
+            }
+        }
+
+        stage('Install Grafana provisioning') {
+            steps {
+                sh '''
+                    helm upgrade --install grafana-provisioning ./monitoring/helm/grafana-provisioning \
+                        -n $NAMESPACE \
+                        --set contact.to="$GRAFANA_ALERT_EMAIL"
+                '''
+            }
+        }
+
+        stage('Install Grafana') {
+            steps {
+                sh '''
+                    helm repo add grafana https://grafana.github.io/helm-charts
+                    helm repo update
+
+                    helm upgrade --install grafana grafana/grafana \
+                        -n $NAMESPACE \
+                        -f monitoring/helm/grafana-values.yaml \
+                        --set-string smtp.user="$GRAFANA_SMTP_USER" \
+                        --set-string smtp.password="$GRAFANA_SMTP_PASS" \
+                        --set-string smtp.from="$GRAFANA_SMTP_FROM"
+                '''
+            }
+        }
+
+        stage('Output Access Info') {
+            steps {
+                script {
+                    def nodePort = sh(script: "kubectl get svc -n $NAMESPACE grafana -o jsonpath='{.spec.ports[0].nodePort}'", returnStdout: true).trim()
+                    echo "Grafana NodePort: ${nodePort}"
+                    echo "Access Grafana via: http://localhost:${nodePort}"
+                    echo "You may need to run: kubectl port-forward svc/grafana 3000:3000 -n monitoring"
+                }
+            }
+        }
+    }
+}

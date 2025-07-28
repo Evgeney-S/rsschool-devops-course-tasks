@@ -1,0 +1,264 @@
+Started by user Jenkins Admin
+Obtained monitoring/Jenkinsfile from git https://github.com/Evgeney-S/rsschool-devops-course-tasks.git
+[Pipeline] Start of Pipeline
+[Pipeline] readTrusted
+Obtained monitoring/jenkins/monitoring-agent.yaml from git https://github.com/Evgeney-S/rsschool-devops-course-tasks.git
+[Pipeline] podTemplate
+[Pipeline] {
+[Pipeline] node
+Created Pod: kubernetes jenkins/monitoring-deply-47-jgcbk-qz8jr-vmdvf
+[PodInfo] jenkins/monitoring-deply-47-jgcbk-qz8jr-vmdvf
+	Container [helm] waiting [ContainerCreating] No message
+	Container [jnlp] waiting [ContainerCreating] No message
+	Pod [Pending][ContainersNotReady] containers with unready status: [helm jnlp]
+Agent monitoring-deply-47-jgcbk-qz8jr-vmdvf is provisioned from template Monitoring-deply_47-jgcbk-qz8jr
+---
+apiVersion: "v1"
+kind: "Pod"
+metadata:
+  annotations:
+    kubernetes.jenkins.io/last-refresh: "1753664821012"
+    buildUrl: "http://jenkins.jenkins.svc.cluster.local:8080/job/Monitoring-deply/47/"
+    runUrl: "job/Monitoring-deply/47/"
+  labels:
+    jenkins/jenkins-jenkins-agent: "true"
+    jenkins/label-digest: "21c75fb67d693b0da335e84ec1dab96ffd4b24bf"
+    jenkins/label: "Monitoring-deply_47-jgcbk"
+    kubernetes.jenkins.io/controller: "http___jenkins_jenkins_svc_cluster_local_8080x"
+  name: "monitoring-deply-47-jgcbk-qz8jr-vmdvf"
+  namespace: "jenkins"
+spec:
+  containers:
+  - command:
+    - "cat"
+    image: "evgeneys/helm-kubectl-agent:latest"
+    name: "helm"
+    tty: true
+    volumeMounts:
+    - mountPath: "/home/jenkins/agent"
+      name: "workspace-volume"
+      readOnly: false
+  - env:
+    - name: "JENKINS_SECRET"
+      value: "********"
+    - name: "JENKINS_TUNNEL"
+      value: "jenkins-agent.jenkins.svc.cluster.local:50000"
+    - name: "JENKINS_AGENT_NAME"
+      value: "monitoring-deply-47-jgcbk-qz8jr-vmdvf"
+    - name: "REMOTING_OPTS"
+      value: "-noReconnectAfter 1d"
+    - name: "JENKINS_NAME"
+      value: "monitoring-deply-47-jgcbk-qz8jr-vmdvf"
+    - name: "JENKINS_AGENT_WORKDIR"
+      value: "/home/jenkins/agent"
+    - name: "JENKINS_URL"
+      value: "http://jenkins.jenkins.svc.cluster.local:8080/"
+    image: "jenkins/inbound-agent:3309.v27b_9314fd1a_4-1"
+    name: "jnlp"
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "100m"
+    volumeMounts:
+    - mountPath: "/home/jenkins/agent"
+      name: "workspace-volume"
+      readOnly: false
+  nodeSelector:
+    kubernetes.io/os: "linux"
+  restartPolicy: "Never"
+  volumes:
+  - emptyDir:
+      medium: ""
+    name: "workspace-volume"
+
+Running on monitoring-deply-47-jgcbk-qz8jr-vmdvf in /home/jenkins/agent/workspace/Monitoring-deply
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Declarative: Checkout SCM)
+[Pipeline] checkout
+Selected Git installation does not exist. Using Default
+The recommended git tool is: NONE
+No credentials specified
+Cloning the remote Git repository
+Cloning repository https://github.com/Evgeney-S/rsschool-devops-course-tasks.git
+ > git init /home/jenkins/agent/workspace/Monitoring-deply # timeout=10
+Fetching upstream changes from https://github.com/Evgeney-S/rsschool-devops-course-tasks.git
+ > git --version # timeout=10
+ > git --version # 'git version 2.39.5'
+ > git fetch --tags --force --progress -- https://github.com/Evgeney-S/rsschool-devops-course-tasks.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > git config remote.origin.url https://github.com/Evgeney-S/rsschool-devops-course-tasks.git # timeout=10
+ > git config --add remote.origin.fetch +refs/heads/*:refs/remotes/origin/* # timeout=10
+Avoid second fetch
+Checking out Revision 5db8e91c69959b76d0235149ba05bb7d0328769f (refs/remotes/origin/task-7)
+Commit message: "alerts new"
+ > git rev-parse refs/remotes/origin/task-7^{commit} # timeout=10
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f 5db8e91c69959b76d0235149ba05bb7d0328769f # timeout=10
+ > git rev-list --no-walk 5db8e91c69959b76d0235149ba05bb7d0328769f # timeout=10
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] container
+[Pipeline] {
+[Pipeline] withCredentials
+Masking supported pattern matches of $GRAFANA_SMTP_FROM or $GRAFANA_SMTP_USER or $GRAFANA_ALERT_EMAIL or $GRAFANA_SMTP_PASS
+[Pipeline] {
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Create namespace)
+[Pipeline] sh
++ kubectl create ns monitoring --dry-run=client -o yaml
++ kubectl apply --validate=false -f -
+namespace/monitoring configured
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Install Prometheus)
+[Pipeline] sh
++ helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+"prometheus-community" has been added to your repositories
++ helm repo update
+Hang tight while we grab the latest from your chart repositories...
+...Successfully got an update from the "prometheus-community" chart repository
+Update Complete. ⎈Happy Helming!⎈
++ helm upgrade --install prometheus prometheus-community/prometheus -n monitoring -f monitoring/helm/prometheus-values.yaml
+Release "prometheus" has been upgraded. Happy Helming!
+NAME: prometheus
+LAST DEPLOYED: Mon Jul 28 01:07:36 2025
+NAMESPACE: monitoring
+STATUS: deployed
+REVISION: 41
+TEST SUITE: None
+NOTES:
+The Prometheus server can be accessed via port 80 on the following DNS name from within your cluster:
+prometheus-server.monitoring.svc.cluster.local
+
+
+Get the Prometheus server URL by running these commands in the same shell:
+  export POD_NAME=$(kubectl get pods --namespace monitoring -l "app.kubernetes.io/name=prometheus,app.kubernetes.io/instance=prometheus" -o jsonpath="{.items[0].metadata.name}")
+  kubectl --namespace monitoring port-forward $POD_NAME 9090
+
+
+The Prometheus alertmanager can be accessed via port 9093 on the following DNS name from within your cluster:
+prometheus-alertmanager.monitoring.svc.cluster.local
+
+
+Get the Alertmanager URL by running these commands in the same shell:
+  export POD_NAME=$(kubectl get pods --namespace monitoring -l "app.kubernetes.io/name=alertmanager,app.kubernetes.io/instance=prometheus" -o jsonpath="{.items[0].metadata.name}")
+  kubectl --namespace monitoring port-forward $POD_NAME 9093
+#################################################################################
+######   WARNING: Pod Security Policy has been disabled by default since    #####
+######            it deprecated after k8s 1.25+. use                        #####
+######            (index .Values "prometheus-node-exporter" "rbac"          #####
+###### .          "pspEnabled") with (index .Values                         #####
+######            "prometheus-node-exporter" "rbac" "pspAnnotations")       #####
+######            in case you still need it.                                #####
+#################################################################################
+
+
+The Prometheus PushGateway can be accessed via port 9091 on the following DNS name from within your cluster:
+prometheus-prometheus-pushgateway.monitoring.svc.cluster.local
+
+
+Get the PushGateway URL by running these commands in the same shell:
+  export POD_NAME=$(kubectl get pods --namespace monitoring -l "app=prometheus-pushgateway,component=pushgateway" -o jsonpath="{.items[0].metadata.name}")
+  kubectl --namespace monitoring port-forward $POD_NAME 9091
+
+For more information on running Prometheus, visit:
+https://prometheus.io/
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Create Grafana admin secret)
+[Pipeline] withCredentials
+Masking supported pattern matches of $GRAFANA_PASS
+[Pipeline] {
+[Pipeline] sh
++ + kubectl create secret generic grafana-admin --from-literal=admin-user=admin --from-literal=admin-password=**** -n monitoringkubectl --dry-run=client apply -o -f yaml -
+
+secret/grafana-admin created
+[Pipeline] }
+[Pipeline] // withCredentials
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Install Grafana provisioning)
+[Pipeline] sh
++ helm upgrade --install grafana-provisioning ./monitoring/helm/grafana-provisioning -n monitoring --set contact.to=****
+Release "grafana-provisioning" has been upgraded. Happy Helming!
+NAME: grafana-provisioning
+LAST DEPLOYED: Mon Jul 28 01:07:41 2025
+NAMESPACE: monitoring
+STATUS: deployed
+REVISION: 12
+TEST SUITE: None
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Install Grafana)
+[Pipeline] sh
++ helm repo add grafana https://grafana.github.io/helm-charts
+"grafana" has been added to your repositories
++ helm repo update
+Hang tight while we grab the latest from your chart repositories...
+...Successfully got an update from the "grafana" chart repository
+...Successfully got an update from the "prometheus-community" chart repository
+Update Complete. ⎈Happy Helming!⎈
++ helm upgrade --install grafana grafana/grafana -n monitoring -f monitoring/helm/grafana-values.yaml --set-string smtp.user=**** --set-string smtp.password=**** --set-string smtp.from=****
+Release "grafana" does not exist. Installing it now.
+NAME: grafana
+LAST DEPLOYED: Mon Jul 28 01:07:49 2025
+NAMESPACE: monitoring
+STATUS: deployed
+REVISION: 1
+NOTES:
+1. Get your 'admin' user password by running:
+
+   kubectl get secret --namespace monitoring grafana-admin -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
+
+
+2. The Grafana server can be accessed via port 3000 on the following DNS name from within your cluster:
+
+   grafana.monitoring.svc.cluster.local
+
+   Get the Grafana URL to visit by running these commands in the same shell:
+     export NODE_PORT=$(kubectl get --namespace monitoring -o jsonpath="{.spec.ports[0].nodePort}" services grafana)
+     export NODE_IP=$(kubectl get nodes --namespace monitoring -o jsonpath="{.items[0].status.addresses[0].address}")
+     echo http://$NODE_IP:$NODE_PORT
+
+3. Login with the password from step 1 and the username: admin
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Output Access Info)
+[Pipeline] script
+[Pipeline] {
+[Pipeline] sh
++ kubectl get svc -n monitoring grafana -o jsonpath={.spec.ports[0].nodePort}
+[Pipeline] echo
+Grafana NodePort: 32263
+[Pipeline] echo
+Access Grafana via: http://localhost:32263
+[Pipeline] echo
+You may need to run: kubectl port-forward svc/grafana 3000:3000 -n monitoring
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // withCredentials
+[Pipeline] }
+[Pipeline] // container
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+Agent monitoring-deply-47-jgcbk-qz8jr-vmdvf was deleted, but do not have a node body to cancel
+[Pipeline] // node
+[Pipeline] }
+[Pipeline] // podTemplate
+[Pipeline] End of Pipeline
+Finished: SUCCESS

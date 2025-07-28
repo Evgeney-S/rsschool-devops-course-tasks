@@ -1,0 +1,206 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-provisioning
+  labels:
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/component: provisioning
+    app.kubernetes.io/part-of: monitoring
+    managed-by: Helm
+data:
+  alerts.yaml: |-
+    apiVersion: 1
+    groups:
+      - name: resource-alerts
+        folder: Cluster Alerts
+        interval: 1m
+        rules:
+          - uid: high-cpu-usage
+            title: High CPU usage
+            condition: C
+            data:
+              - refId: A
+                queryType: ""
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: prometheus-server
+                model:
+                  expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[2m])) * 100)
+                  format: time_series
+                  interval: ""
+                  intervalFactor: 2
+                  legendFormat: "{{`{{ instance }}`}}"
+                  refId: A
+              - refId: B
+                queryType: ""
+                relativeTimeRange:
+                  from: 0
+                  to: 0
+                datasourceUid: __expr__
+                model:
+                  conditions:
+                    - evaluator:
+                        params: []
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                          - B
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                  datasource:
+                    type: __expr__
+                    uid: __expr__
+                  expression: A
+                  hide: false
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  reducer: last
+                  refId: B
+                  type: reduce
+              - refId: C
+                queryType: ""
+                relativeTimeRange:
+                  from: 0
+                  to: 0
+                datasourceUid: __expr__
+                model:
+                  conditions:
+                    - evaluator:
+                        params:
+                          - {{ .Values.alerts.cpuThresholdAbs }}
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                          - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                  datasource:
+                    type: __expr__
+                    uid: __expr__
+                  expression: $B > {{ .Values.alerts.cpuThresholdPerc }}
+                  hide: false
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  refId: C
+                  type: math
+            for: 1m
+            noDataState: NoData
+            execErrState: Alerting
+            annotations:
+              summary: "High CPU usage detected"
+              description: "CPU usage is above {{ .Values.alerts.cpuThresholdPerc }}% for more than 1 minute"
+            labels:
+              severity: warning
+
+          - uid: low-mem-available
+            title: Low available memory
+            condition: C
+            data:
+              - refId: A
+                queryType: ""
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: prometheus-server
+                model:
+                  expr: (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)
+                  format: time_series
+                  interval: ""
+                  intervalFactor: 2
+                  legendFormat: "{{`{{ instance }}`}}"
+                  refId: A
+              - refId: B
+                queryType: ""
+                relativeTimeRange:
+                  from: 0
+                  to: 0
+                datasourceUid: __expr__
+                model:
+                  conditions:
+                    - evaluator:
+                        params: []
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                          - B
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                  datasource:
+                    type: __expr__
+                    uid: __expr__
+                  expression: A
+                  hide: false
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  reducer: last
+                  refId: B
+                  type: reduce
+              - refId: C
+                queryType: ""
+                relativeTimeRange:
+                  from: 0
+                  to: 0
+                datasourceUid: __expr__
+                model:
+                  conditions:
+                    - evaluator:
+                        params:
+                          - {{ .Values.alerts.memThresholdAbs }}
+                        type: lt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                          - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                  datasource:
+                    type: __expr__
+                    uid: __expr__
+                  expression: $B < {{ .Values.alerts.memThresholdAbs }}
+                  hide: false
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  refId: C
+                  type: math
+            for: 1m
+            noDataState: NoData
+            execErrState: Alerting
+            annotations:
+              summary: "Low available memory detected"
+              description: "Less than {{ .Values.alerts.memThresholdPerc }}% RAM is available"
+            labels:
+              severity: warning
+  contact-points.yaml: |-
+    apiVersion: 1
+    contactPoints:
+      - orgId: 1
+        name: "admin-email-contact"
+        receivers:
+          - uid: "admin-email1"
+            type: "email"
+            settings:
+              addresses: {{ .Values.contact.to | quote }}
+  policies.yaml: |-
+    apiVersion: 1
+    policies:
+      - orgId: 1
+        receiver: "admin-email-contact"
+        group_by: ['alertname']
+        matchers: []
+        continue: false

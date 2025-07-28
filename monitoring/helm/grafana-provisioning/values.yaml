@@ -1,0 +1,11 @@
+alerts:
+  cpuThresholdAbs: 0.5
+  cpuThresholdPerc: 50
+  memThresholdAbs: 0.5
+  memThresholdPerc: 50
+
+datasource:
+  uid: prometheus-server
+
+contact:
+  to: "" # This will be set in the Jenkins
