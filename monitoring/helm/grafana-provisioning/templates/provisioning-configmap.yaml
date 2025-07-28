@@ -24,7 +24,7 @@ data:
                 relativeTimeRange:
                   from: 300
                   to: 0
-                datasourceUid: {{ .Values.datasource.uid | quote }}
+                datasourceUid: prometheus-server
                 model:
                   expr: sum(rate(container_cpu_usage_seconds_total{image!=""}[2m])) by (node)
                   format: time_series
@@ -86,7 +86,7 @@ data:
                   datasource:
                     type: __expr__
                     uid: __expr__
-                  expression: B > {{ .Values.alerts.cpuThreshold | default 0.75 }}
+                  expression: $B > {{ .Values.alerts.cpuThreshold | default 0.75 }}
                   hide: false
                   intervalMs: 1000
                   maxDataPoints: 43200
@@ -110,7 +110,7 @@ data:
                 relativeTimeRange:
                   from: 300
                   to: 0
-                datasourceUid: {{ .Values.datasource.uid | quote }}
+                datasourceUid: prometheus-server
                 model:
                   expr: (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)
                   format: time_series
@@ -172,7 +172,7 @@ data:
                   datasource:
                     type: __expr__
                     uid: __expr__
-                  expression: B < {{ .Values.alerts.memThreshold | default 0.25 }}
+                  expression: $B < {{ .Values.alerts.memThreshold | default 0.25 }}
                   hide: false
                   intervalMs: 1000
                   maxDataPoints: 43200
