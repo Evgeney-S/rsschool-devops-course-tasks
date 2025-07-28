@@ -2,12 +2,12 @@
 
 This monitoring setup includes Prometheus and Grafana installed into a Kubernetes cluster using Helm and Jenkins pipeline.
 
-## Requirements
+## Environment
 
-- Jenkins running with Kubernetes plugin
-- Jenkins agent with `kubectl` and `helm`
-- Minikube or any Kubernetes cluster
-- Local SMTP server (Mailtrap or equivalent)
+- Local setup in Windows OS using PowerShell to manage it
+- Docker Desktop
+- Minikube running in Docker container
+- Jenkins installed via Helm
 
 ## Deployment Steps
 
