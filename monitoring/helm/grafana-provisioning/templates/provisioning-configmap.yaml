@@ -17,83 +17,51 @@ data:
         rules:
           - uid: high-cpu-usage
             title: High CPU usage
-            condition: C
+            condition: A
             data:
               - refId: A
-                datasourceUid: prometheus-server
                 relativeTimeRange:
                   from: 120
                   to: 0
+                datasourceUid: prometheus-server
                 model:
-                  expr: sum(rate(container_cpu_usage_seconds_total{image!=""}[2m])) by (node)
+                  expr: sum(rate(container_cpu_usage_seconds_total{image!=""}[2m])) by (node) > {{ .Values.alerts.cpuThreshold | default 0.75 }}
                   format: time_series
                   interval: ""
                   intervalFactor: 2
+                  # legendFormat: "{{`{{ node }}`}}"
                   legendFormat: "High CPU usage"
                   refId: A
-
-              - refId: B
-                datasourceUid: __expr__
-                model:
-                  type: reduce
-                  expression: A
-                  reducer: last
-                  refId: B
-
-              - refId: C
-                datasourceUid: __expr__
-                model:
-                  type: threshold
-                  expression: B
-                  operator: gt
-                  value: {{ .Values.alerts.cpuThreshold | default 0.75 }}
-                  refId: C
-
             for: 1m
             annotations:
+              # summary: "High CPU usage on {{`{{ $labels.node }}`}}"
               summary: "High CPU usage"
-              description: "CPU usage is above {{ mul .Values.alerts.cpuThreshold 100 | default 75 }}% for more than 1 minute"
+              description: "CPU usage is above {{ mul .Values.alerts.cpuThreshold 100 | default 75 }}% for more than 1m"
             labels:
               severity: warning
 
           - uid: low-mem-available
             title: Low available memory
-            condition: C
+            condition: A
             data:
               - refId: A
-                datasourceUid: prometheus-server
                 relativeTimeRange:
                   from: 120
                   to: 0
+                datasourceUid: prometheus-server
                 model:
-                  expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes
+                  expr: (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) < {{ .Values.alerts.memThreshold | default 0.25 }}
                   format: time_series
                   interval: ""
                   intervalFactor: 2
+                  # legendFormat: "{{`{{ node }}`}}"
                   legendFormat: "Low available memory"
                   refId: A
-
-              - refId: B
-                datasourceUid: __expr__
-                model:
-                  type: reduce
-                  expression: A
-                  reducer: last
-                  refId: B
-
-              - refId: C
-                datasourceUid: __expr__
-                model:
-                  type: threshold
-                  expression: B
-                  operator: lt
-                  value: {{ .Values.alerts.memThreshold | default 0.25 }}
-                  refId: C
-
             for: 1m
             annotations:
+              # summary: "Low available memory on {{`{{ $labels.node }}`}}"
               summary: "Low available memory"
-              description: "Available memory is less than {{ mul .Values.alerts.memThreshold 100 | default 25 }}%"
+              description: "Less than {{ mul .Values.alerts.memThreshold 100 | default 25 }}% RAM is available"
             labels:
               severity: warning
   contact-points.yaml: |-
