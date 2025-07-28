@@ -17,51 +17,173 @@ data:
         rules:
           - uid: high-cpu-usage
             title: High CPU usage
-            condition: A
+            condition: C
             data:
               - refId: A
+                queryType: ""
                 relativeTimeRange:
-                  from: 120
+                  from: 300
                   to: 0
-                datasourceUid: prometheus-server
+                datasourceUid: {{ .Values.datasource.uid | quote }}
                 model:
-                  expr: sum(rate(container_cpu_usage_seconds_total{image!=""}[2m])) by (node) > {{ .Values.alerts.cpuThreshold | default 0.75 }}
+                  expr: sum(rate(container_cpu_usage_seconds_total{image!=""}[2m])) by (node)
                   format: time_series
                   interval: ""
                   intervalFactor: 2
-                  # legendFormat: "{{`{{ node }}`}}"
-                  legendFormat: "High CPU usage"
+                  legendFormat: "{{`{{ node }}`}}"
                   refId: A
+              - refId: B
+                queryType: ""
+                relativeTimeRange:
+                  from: 0
+                  to: 0
+                datasourceUid: __expr__
+                model:
+                  conditions:
+                    - evaluator:
+                        params: []
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                          - B
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                  datasource:
+                    type: __expr__
+                    uid: __expr__
+                  expression: A
+                  hide: false
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  reducer: last
+                  refId: B
+                  type: reduce
+              - refId: C
+                queryType: ""
+                relativeTimeRange:
+                  from: 0
+                  to: 0
+                datasourceUid: __expr__
+                model:
+                  conditions:
+                    - evaluator:
+                        params:
+                          - {{ .Values.alerts.cpuThreshold | default 0.75 }}
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                          - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                  datasource:
+                    type: __expr__
+                    uid: __expr__
+                  expression: B > {{ .Values.alerts.cpuThreshold | default 0.75 }}
+                  hide: false
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  refId: C
+                  type: math
             for: 1m
+            noDataState: NoData
+            execErrState: Alerting
             annotations:
-              # summary: "High CPU usage on {{`{{ $labels.node }}`}}"
-              summary: "High CPU usage"
-              description: "CPU usage is above {{ mul .Values.alerts.cpuThreshold 100 | default 75 }}% for more than 1m"
+              summary: "High CPU usage detected"
+              description: "CPU usage is above {{ mul (.Values.alerts.cpuThreshold | default 0.75) 100 }}% for more than 1 minute"
             labels:
               severity: warning
 
           - uid: low-mem-available
             title: Low available memory
-            condition: A
+            condition: C
             data:
               - refId: A
+                queryType: ""
                 relativeTimeRange:
-                  from: 120
+                  from: 300
                   to: 0
-                datasourceUid: prometheus-server
+                datasourceUid: {{ .Values.datasource.uid | quote }}
                 model:
-                  expr: (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) < {{ .Values.alerts.memThreshold | default 0.25 }}
+                  expr: (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)
                   format: time_series
                   interval: ""
                   intervalFactor: 2
-                  # legendFormat: "{{`{{ node }}`}}"
-                  legendFormat: "Low available memory"
+                  legendFormat: "{{`{{ instance }}`}}"
                   refId: A
+              - refId: B
+                queryType: ""
+                relativeTimeRange:
+                  from: 0
+                  to: 0
+                datasourceUid: __expr__
+                model:
+                  conditions:
+                    - evaluator:
+                        params: []
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                          - B
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                  datasource:
+                    type: __expr__
+                    uid: __expr__
+                  expression: A
+                  hide: false
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  reducer: last
+                  refId: B
+                  type: reduce
+              - refId: C
+                queryType: ""
+                relativeTimeRange:
+                  from: 0
+                  to: 0
+                datasourceUid: __expr__
+                model:
+                  conditions:
+                    - evaluator:
+                        params:
+                          - {{ .Values.alerts.memThreshold | default 0.25 }}
+                        type: lt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                          - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                  datasource:
+                    type: __expr__
+                    uid: __expr__
+                  expression: B < {{ .Values.alerts.memThreshold | default 0.25 }}
+                  hide: false
+                  intervalMs: 1000
+                  maxDataPoints: 43200
+                  refId: C
+                  type: math
             for: 1m
+            noDataState: NoData
+            execErrState: Alerting
             annotations:
-              # summary: "Low available memory on {{`{{ $labels.node }}`}}"
-              summary: "Low available memory"
-              description: "Less than {{ mul .Values.alerts.memThreshold 100 | default 25 }}% RAM is available"
+              summary: "Low available memory detected"
+              description: "Less than {{ mul (.Values.alerts.memThreshold | default 0.25) 100 }}% RAM is available"
             labels:
               severity: warning
   contact-points.yaml: |-
