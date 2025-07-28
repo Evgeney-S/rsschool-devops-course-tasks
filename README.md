@@ -43,9 +43,9 @@ kubectl port-forward svc/grafana 3000:3000 -n monitoring
 
 ## Alert Rules
 
-- High CPU usage (>80%) on a node
+- High CPU usage (>50%)
 
-- Low available memory (<20%) on a node
+- Low available memory (<50%)
 
 
 ## Email Alerts
