@@ -26,11 +26,11 @@ data:
                   to: 0
                 datasourceUid: prometheus-server
                 model:
-                  expr: sum(rate(container_cpu_usage_seconds_total{image!=""}[2m])) by (node)
+                  expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[2m])) * 100)
                   format: time_series
                   interval: ""
                   intervalFactor: 2
-                  legendFormat: "{{`{{ node }}`}}"
+                  legendFormat: "{{`{{ instance }}`}}"
                   refId: A
               - refId: B
                 queryType: ""
@@ -97,7 +97,7 @@ data:
             execErrState: Alerting
             annotations:
               summary: "High CPU usage detected"
-              description: "CPU usage is above {{ mul (.Values.alerts.cpuThreshold | default 0.75) 100 }}% for more than 1 minute"
+              description: "CPU usage is above {{ mul .Values.alerts.cpuThreshold 100 | default 75 }}% for more than 1 minute"
             labels:
               severity: warning
 
@@ -183,7 +183,7 @@ data:
             execErrState: Alerting
             annotations:
               summary: "Low available memory detected"
-              description: "Less than {{ mul (.Values.alerts.memThreshold | default 0.25) 100 }}% RAM is available"
+              description: "Less than {{ mul .Values.alerts.memThreshold 100 | default 25 }}% RAM is available"
             labels:
               severity: warning
   contact-points.yaml: |-
