@@ -72,7 +72,7 @@ data:
                   conditions:
                     - evaluator:
                         params:
-                          - {{ .Values.alerts.cpuThreshold | default 0.75 }}
+                          - {{ .Values.alerts.cpuThreshold }}
                         type: gt
                       operator:
                         type: and
@@ -86,7 +86,7 @@ data:
                   datasource:
                     type: __expr__
                     uid: __expr__
-                  expression: $B > {{ mul .Values.alerts.cpuThreshold 100 | default 75 }}
+                  expression: $B > {{ mul .Values.alerts.cpuThreshold 100 }}
                   hide: false
                   intervalMs: 1000
                   maxDataPoints: 43200
@@ -97,7 +97,7 @@ data:
             execErrState: Alerting
             annotations:
               summary: "High CPU usage detected"
-              description: "CPU usage is above {{ mul .Values.alerts.cpuThreshold 100 | default 75 }}% for more than 1 minute"
+              description: "CPU usage is above {{ mul .Values.alerts.cpuThreshold 100 }}% for more than 1 minute"
             labels:
               severity: warning
 
@@ -158,7 +158,7 @@ data:
                   conditions:
                     - evaluator:
                         params:
-                          - {{ .Values.alerts.memThreshold | default 0.25 }}
+                          - {{ .Values.alerts.memThreshold }}
                         type: lt
                       operator:
                         type: and
@@ -172,7 +172,7 @@ data:
                   datasource:
                     type: __expr__
                     uid: __expr__
-                  expression: $B < {{ .Values.alerts.memThreshold | default 0.25 }}
+                  expression: $B < {{ .Values.alerts.memThreshold }}
                   hide: false
                   intervalMs: 1000
                   maxDataPoints: 43200
@@ -183,7 +183,7 @@ data:
             execErrState: Alerting
             annotations:
               summary: "Low available memory detected"
-              description: "Less than {{ mul .Values.alerts.memThreshold 100 | default 25 }}% RAM is available"
+              description: "Less than {{ mul .Values.alerts.memThreshold 100 }}% RAM is available"
             labels:
               severity: warning
   contact-points.yaml: |-
